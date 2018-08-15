@@ -20,14 +20,6 @@ data = JSON.stringify(data);
 
 var output = 'export const env = ' + data + ';';
 
-fs.writeFileSync(envFile, output, (err) => {
-	if(err) {
-    	return console.log(err);
-	}
-
-	console.log("src/environments/env.ts was saved");
-});
-
-console.log(envFile);
+fs.writeFileSync(envFile, output);
 
 process.exit(0);
