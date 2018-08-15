@@ -9,8 +9,8 @@
       "display-env": "cross-var echo Building Environment: $npm_package_config_env",
       "build:dev": "build --env=tools:dev",
       "zip:dev": "npm-run-all -s build:dev dist:zip",
-      "package": "npm-run-all -s display-env build",
-      "package:zip": "cd ../dist && bestzip ../../dist.zip ./*",
+      "package": "npm-run-all -s display-env build package:zip",
+      "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
       "dist:zip": "cd ../dist && bestzip ../../dist.zip ./*"
     },
     "config": {
