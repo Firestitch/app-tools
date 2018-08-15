@@ -1,19 +1,19 @@
 {
     "name": "tools",
     "scripts": {
-
-      "serve": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false",
-      "serve:aot": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false --aot",
-      "serve:secure": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false --ssl 1 --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
-      "build": "cross-var ng build --env=$npm_package_config_env",
-      "display-env": "cross-var echo Building Environment: $npm_package_config_env",
-      "build:dev": "build --env=tools:dev",
-      "zip:dev": "npm-run-all -s build:dev dist:zip",
-      "package": "npm-run-all -s display-env build package:zip",
-      "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
-      "dist:zip": "cd ../dist && bestzip ../../dist.zip ./*"
-    },
-    "config": {
-      "env": "local"
+      "serve": "npm-run-all -s display-env build-env serve:run",
+      "serve:run": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false",
+      "serve:aot": "npm-run-all -s display-env build-env serve:run-aot",
+      "serve:run-aot": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false --aot",
+      "serve:secure": "npm-run-all -s display-env build-env serve:run-secure",
+      "run-secure": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false --ssl 1 --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
+      "build": "npm-run-all -s display-env build-env build-run",
+      "build-run": "cross-var ng build --env=$npm_package_config_env --aot --build-optimizer",
+      "display-env": "cross-var echo Build Environment: $npm_package_config_env",
+      "package:platform": "npm-run-all -s build package:zip-platform",
+      "package:app": "npm-run-all -s build package:zip-app",
+      "package:zip-platform": "cd ../../ && bestzip package-platform.zip ./frontend/dist ./backend ./framework ./maintenance",
+      "package:zip-app": "cd ../dist && bestzip ../../package-app.zip ./*",
+      "build-env": "node ./scripts/build-env.js"
     }
   }
