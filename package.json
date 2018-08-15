@@ -8,7 +8,7 @@
       "serve:secure": "npm-run-all -s display-env build-env serve:run-secure",
       "run-secure": "cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --environment=$npm_package_config_env --live-reload false --ssl 1 --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
       "build": "npm-run-all -s display-env build-env build-run",
-      "build-run": "cross-var ng build --env=$npm_package_config_env --aot --build-optimizer",
+      "build-run": "cross-var ng build --env=$npm_package_config_env --aot",
       "display-env": "cross-var echo Build Environment: $npm_package_config_env",
       "package:platform": "npm-run-all -s build package:zip-platform",
       "package:app": "npm-run-all -s build package:zip-app",
