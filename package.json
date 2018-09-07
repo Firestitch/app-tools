@@ -10,7 +10,7 @@
       "build": "npm-run-all -s display-env build-env build:run",
       "build:run": "npm-cross-var ng build --env=$npm_package_config_env --aot",
       "build-prod": "npm-run-all -s display-env build-env build-prod:run",
-      "build-prod:run": "npm-cross-var ng build --env=$npm_package_config_env --aot --prod --build-optimizer --sourcemaps=false --vendor-chunk=true",
+      "build-prod:run": "npm-cross-var ng build --env=$npm_package_config_env --aot --prod --sourcemaps=false --vendor-chunk=true",
       "package:platform": "npm-run-all -s build-prod package:zip-platform",
       "package:app": "npm-run-all -s build-prod package:zip-app",
 
