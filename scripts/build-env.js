@@ -2,17 +2,12 @@
 
 const fs = require('fs');
 const path = require('path');
-
 const envFile = path.join(__dirname, '../../src/environments/env.ts');
-const jsonFile = path.join(__dirname, '../../package.json');
-const pacakgeJson = JSON.parse(fs.readFileSync(jsonFile));
-const packageName = pacakgeJson.name;
 
 var data = {};
-var re = new RegExp('npm_config_' + packageName + '_(.*)');
+var re = new RegExp('npm_config_tools_(.*)');
 
 Object.keys(process.env).forEach((name) => {
-npm_config_sportgo_device:
 	var match = name.match(re);
 	if (match) {
 		var value = process.env[name];
