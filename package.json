@@ -1,40 +1,28 @@
 {
     "name": "tools",
     "scripts": {
-      "serve": "npm-run-all -s display-env build-env serve:run",
-      "serve:run": "npm-cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --env=$npm_package_config_env --live-reload=$npm_package_config_livereload",
-      "serve:aot": "npm-run-all -s display-env build-env serve:run-aot",
-      "serve:run-aot": "npm-cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --env=$npm_package_config_env --live-reload=$npm_package_config_livereload --aot",
-      "serve:secure": "npm-run-all -s display-env build-env serve:secure:run",
-      "serve:secure:run": "npm-cross-var ng serve --proxy-config ../proxies/$npm_package_config_env.conf.json --env=$npm_package_config_env --live-reload=$npm_package_config_livereload --ssl 1 --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
-      "build": "npm-run-all -s display-env build-env build:run",
-      "build:run": "npm-cross-var ng build --env=$npm_package_config_env --aot --output-path=$npm_package_config_outputpath",
-      "build-prod": "npm-run-all -s display-env build-env build-prod:run",
-      "build-prod:run": "npm-cross-var ng build --env=$npm_package_config_env --aot --prod --sourcemaps=false --vendor-chunk=true --output-path=$npm_package_config_outputpath",
-      "package": "npm-run-all -s build-prod --tools:device=desktop package:zip",
-      "package:mobile": "npm-run-all -s build-prod --tools:outputpath=tmp/zip --tools:device=mobile package:zip-app",
+      "serve": "npm run env & npm run serve:run",
+      "serve:run": "npm-cross-var ng serve --live-reload=$npm_config_livereload --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
-      "serve6": "npm-run-all -s display-env build-env serve6:run",
-      "serve6:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_package_config_env.conf.json --configuration=$npm_package_config_env",
-      "serve6:aot": "npm-run-all -s display-env build-env serve6:run-aot",
-      "serve6:run-aot": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_package_config_env.conf.json --configuration=$npm_package_config_env --aot",
-      "serve6:secure": "npm-run-all -s display-env build-env serve6:secure:run",
-      "serve6:secure:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_package_config_env.conf.json --configuration=$npm_package_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
-      "build6": "npm-run-all -s display-env build-env build6:run",
-      "build6:run": "npm-cross-var ng build --no-progress --configuration=$npm_package_config_env --aot --output-path=$npm_package_config_outputpath",
-      "build6-prod": "npm-run-all -s display-env build-env build6-prod:run",
-      "build6-prod:run": "npm-cross-var ng build --no-progress --configuration=$npm_package_config_env --aot --prod --build-optimizer --source-map=false --vendor-chunk=true --output-path=$npm_package_config_outputpath",
-      "package6": "npm-run-all -s build6-prod package:zip",
-      "package6:mobile": "npm-run-all -s build6-prod --tools:outputpath=tmp/zip package:zip-app",
+      "serve:aot": "npm run env & npm run serve:run-aot",
+      "serve:run-aot": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
 
-      "display-env": "npm-cross-var echo Environment: $npm_package_config_env, Device: $npm_package_config_device, Live Reload: $npm_package_config_livereload",
-      "build-env": "node ./scripts/build-env.js",
+      "serve:secure": "npm run env & npm run serve:secure:run",
+      "serve:secure:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
+
+      "build": "npm-run-all -s env build:run",
+      "build:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
+
+      "build-prod": "npm-run-all -s env build-prod:run",
+      "build-prod:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --prod --build-optimizer --source-map=false --vendor-chunk=true --output-path=dist",
+
+      "package": "npm-run-all -s build-prod package:zip",
+      "package:mobile": "npm-run-all -s build-prod --tools:outputpath=tmp/zip package:zip-app",
+
+      "env": "npm run env:display && npm run env:build",
+      "env:display": "npm-cross-var echo Environment: $npm_config_env, Device: $npm_config_device, Live Reload: $npm_config_livereload",
+      "env:build": "npm-cross-var node ./scripts/build-env.js",
       "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
       "package:zip-app": "cd ../tmp/zip && bestzip ../../package-app.zip ./*"
-    },
-    "config": {
-      "env": "local",
-      "device": "desktop",
-      "outputpath": "dist"
     }
   }

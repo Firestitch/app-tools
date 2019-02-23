@@ -5,8 +5,7 @@ const path = require('path');
 const envFile = path.join(__dirname, '../../src/environments/env.ts');
 
 var data = {};
-var re = new RegExp('npm_config_tools_(.*)');
-
+var re = new RegExp('npm_config_(device|env)');
 Object.keys(process.env).forEach((name) => {
 	var match = name.match(re);
 	if (match) {
