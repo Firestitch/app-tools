@@ -1,10 +1,10 @@
 {
     "name": "tools",
     "scripts": {
-      "serve": "npm run env & npm run serve:run",
+      "serve": "npm-run-all -s env serve:run",
       "serve:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
-      "serve:livereload": "npm run env & npm run serve:livereload:run",
+      "serve:livereload": "npm-run-all -s env serve:livereload:run",
       "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
       "serve:aot": "npm run env & npm run serve:run-aot",
@@ -13,16 +13,22 @@
       "serve:secure": "npm run env & npm run serve:secure:run",
       "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-      "build": "npm-run-all -s env build:run",
-      "build:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
+      "build:dev": "npm-run-all -s env build:run",
+      "build:dev:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
 
-      "build-prod": "npm-run-all -s env build-prod:run",
-      "build-prod:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --prod --build-optimizer --source-map=false --vendor-chunk=true --output-path=dist",
+      "build:prod": "npm-run-all -s env build:prod:run",
+      "build:prod:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist --prod --build-optimizer --source-map=false --vendor-chunk=true",
+
+      "build7:dev": "npm-run-all -s env build7:dev:run",
+      "build7:dev:run": "npm-cross-var ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
+
+      "build7:prod": "npm-run-all -s env build7:prod:run",
+      "build7:prod:run": "npm-cross-var ng build --progress=false --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
       "package": "npm-run-all -s build-prod package:zip",
       "package:mobile": "npm-run-all -s build-prod --tools:outputpath=tmp/zip package:zip-app",
 
-      "env": "npm run env:display && npm run env:build",
+      "env": "npm-run-all -s env:display env:build",
       "env:display": "npm-cross-var echo Environment: $npm_config_env, Device: $npm_config_device",
       "env:build": "npm-cross-var node ./scripts/build-env.js",
       "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
