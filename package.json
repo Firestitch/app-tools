@@ -13,7 +13,7 @@
       "serve:secure": "npm run env & npm run serve:secure:run",
       "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-      "build:dev": "npm-run-all -s env build:run",
+      "build:dev": "npm-run-all -s env build:dev:run",
       "build:dev:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
 
       "build:prod": "npm-run-all -s env build:prod:run",
