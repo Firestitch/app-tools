@@ -17,13 +17,13 @@
       "build:dev:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
 
       "build:prod": "npm-run-all -s env build:prod:run",
-      "build:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist --prod --build-optimizer --source-map=false --vendor-chunk=true",
+      "build:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --output-path=dist --prod --build-optimizer --source-map=false --vendor-chunk=true",
 
       "build7:dev": "npm-run-all -s env build7:dev:run",
       "build7:dev:run": "npm-cross-var ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
 
       "build7:prod": "npm-run-all -s env build7:prod:run",
-      "build7:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
+      "build7:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
       "package": "npm-run-all -s build-prod package:zip",
       "package:mobile": "npm-run-all -s build-prod --tools:outputpath=tmp/zip package:zip-app",
