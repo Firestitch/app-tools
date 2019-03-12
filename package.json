@@ -25,8 +25,8 @@
       "build7:prod": "npm-run-all -s env build7:prod:run",
       "build7:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
-      "package": "npm-run-all -s build-prod package:zip",
-      "package:mobile": "npm-run-all -s build-prod --tools:outputpath=tmp/zip package:zip-app",
+      "package:web": "npm-run-all -s build7:prod package:zip",
+      "package:mobile": "npm-run-all -s build7:prod --tools:outputpath=tmp/zip package:zip-app",
 
       "env": "npm-run-all -s env:display env:build",
       "env:display": "npm-cross-var echo Environment: $npm_config_env, Device: $npm_config_device",
