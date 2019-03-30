@@ -13,23 +13,17 @@
       "serve:secure": "npm run env & npm run serve:secure:run",
       "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-      "build:dev": "npm-run-all -s env build:dev:run",
-      "build:dev:run": "npm-cross-var ng build --no-progress --configuration=$npm_config_env --aot --output-path=dist",
+      "build": "npm-run-all -s env build:run",
+      "build:run": "npm-cross-var ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
 
-      "build:prod": "npm-run-all -s env build:prod:run",
-      "build:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --output-path=dist --prod --build-optimizer --source-map=false --vendor-chunk=true",
+      "build:optimized": "npm-run-all -s env build:optimized:run",
+      "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
-      "build7:dev": "npm-run-all -s env build7:dev:run",
-      "build7:dev:run": "npm-cross-var ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
-
-      "build7:prod": "npm-run-all -s env build7:prod:run",
-      "build7:prod:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
-
-      "package:web": "npm-run-all -s build7:prod package:zip",
-      "package:mobile": "npm-run-all -s build7:prod --tools:outputpath=tmp/zip package:zip-app",
+      "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
+      "package:mobile": "npm-run-all -s build:optimized --tools:outputpath=tmp/zip package:zip-app --platform=mobile",
 
       "env": "npm-run-all -s env:display env:build",
-      "env:display": "npm-cross-var echo Environment: $npm_config_env, Device: $npm_config_device",
+      "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
       "env:build": "npm-cross-var node ./scripts/build-env.js",
       "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
       "package:zip-app": "cd ../tmp/zip && bestzip ../../package-app.zip ./*"
