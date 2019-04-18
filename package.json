@@ -20,12 +20,12 @@
       "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
       "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
-      "package:app": "npm-run-all -s build:optimized --tools:outputpath=tmp/zip package:zip-app --platform=app",
+      "package:app": "npm-run-all -s build:optimized package:zip-app --platform=app",
 
       "env": "npm-run-all -s env:display env:build",
       "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
       "env:build": "npm-cross-var node ./scripts/build-env.js",
       "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
-      "package:zip-app": "cd ../tmp/zip && bestzip ../../package-app.zip ./*"
+      "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
     }
   }
