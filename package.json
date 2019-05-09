@@ -13,7 +13,7 @@
       "serve:secure": "npm run env & npm run serve:secure:run",
       "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-      "build": "npm-run-all -s env build:run",
+      "build": "npm-run-all -s env build:run build:json",
       "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
 
       "build:optimized": "npm-run-all -s env build:optimized:run",
@@ -24,7 +24,8 @@
 
       "env": "npm-run-all -s env:display env:build",
       "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
-      "env:build": "npm-cross-var node ./scripts/build-env.js",
+      "env:build": "npm-cross-var node ./scripts/env.js",
+      "build:json": "npm-cross-var node ./scripts/build.js",
       "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
       "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
     }
