@@ -16,7 +16,7 @@
       "build": "npm-run-all -s env build:run build:json",
       "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
 
-      "build:optimized": "npm-run-all -s env build:optimized:run",
+      "build:optimized": "npm-run-all -s env build:json build:optimized:run",
       "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
       "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
