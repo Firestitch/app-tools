@@ -14,7 +14,6 @@ var data = { date: new Date().toISOString() };
 
 var cmd = 'cd ../../ && git rev-parse --abbrev-ref HEAD';
 
-
 exec(cmd, (err, stdout, stderr) => {
 
 	const name = stdout.trim();

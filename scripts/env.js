@@ -10,7 +10,8 @@ const path = require('path');
 const exec = require('child_process').exec;
 const envFile = path.join(__dirname, '../../src/environments/env.ts');
 
-var data = {};
+var build = { date: null, name: null };
+var data = { build: build };
 var re = new RegExp('npm_config_(platform|env)');
 Object.keys(process.env).forEach((name) => {
 	var match = name.match(re);
@@ -20,9 +21,28 @@ Object.keys(process.env).forEach((name) => {
 	}
 });
 
-data = JSON.stringify(data);
+new Promise((resolve, reject) => {
 
-var output = 'export const env = ' + data + ';';
-console.log(BLUE,'Env Variables (env.ts) ',data);
+	var cmd = 'cd ../../ && git rev-parse --abbrev-ref HEAD';
+	exec(cmd, (err, stdout, stderr) => {
 
-fs.writeFileSync(envFile, output);
+		const name = stdout.trim();
+
+		if (name) {
+			console.log(BLUE,'Building build.json with branch name ', name);
+			build.name = name;
+			build.date = new Date().toISOString();
+		}
+
+		resolve();
+	});
+})
+.then(() => {
+
+	data = JSON.stringify(data);
+
+	var output = 'export const env = ' + data + ';';
+	console.log(BLUE,'Env Variables (env.ts) ',data);
+
+	fs.writeFileSync(envFile, output);
+});
