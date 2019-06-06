@@ -1,32 +1,38 @@
 {
-    "name": "tools",
-    "scripts": {
-      "serve": "npm-run-all -s env serve:run",
-      "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
+  "name": "tools",
+  "scripts": {
+    "serve": "npm-run-all -s env serve:run",
+    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
-      "serve:livereload": "npm-run-all -s env serve:livereload:run",
-      "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
+    "serve:livereload": "npm-run-all -s env serve:livereload:run",
+    "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
-      "serve:aot": "npm run env & npm run serve:run-aot",
-      "serve:run-aot": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
+    "serve:aot": "npm run env & npm run serve:run-aot",
+    "serve:run-aot": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
 
-      "serve:secure": "npm run env & npm run serve:secure:run",
-      "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
+    "serve:secure": "npm run env & npm run serve:secure:run",
+    "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-      "build": "npm-run-all -s env build:run build:json",
-      "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
+    "build": "npm-run-all -s env build:run build:json",
+    "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
 
-      "build:optimized": "npm-run-all -s env build:json build:optimized:run",
-      "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
+    "build:nonoptimized": "npm-run-all -s env build:nonoptimized:run build:json",
+    "build:nonoptimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=dist",
 
-      "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
-      "package:app": "npm-run-all -s build:optimized package:zip-app --platform=app",
+    "build:optimized": "npm-run-all -s env build:json build:optimized:run",
+    "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
-      "env": "npm-run-all -s env:display env:build",
-      "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
-      "env:build": "npm-cross-var node ./scripts/env.js",
-      "build:json": "npm-cross-var node ./scripts/build.js",
-      "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
-      "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
-    }
+    "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
+    "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
+
+    "package:app": "npm-run-all -s build:optimized package:zip-app --platform=app",
+    "package:app:nonoptimized": "npm-run-all -s build:nonoptimized package:zip-app --platform=app",
+
+    "env": "npm-run-all -s env:display env:build",
+    "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
+    "env:build": "npm-cross-var node ./scripts/env.js",
+    "build:json": "npm-cross-var node ./scripts/build.js",
+    "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
+    "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
   }
+}
