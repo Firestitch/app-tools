@@ -12,7 +12,7 @@ const file = path.join(__dirname, '../../src/assets/build.json');
 
 var data = { date: new Date().toISOString() };
 
-var cmd = 'cd ../../ && git rev-parse --abbrev-ref HEAD';
+var cmd = 'cd ../../ && git symbolic-ref --short HEAD';
 
 exec(cmd, (err, stdout, stderr) => {
 
