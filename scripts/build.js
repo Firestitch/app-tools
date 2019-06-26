@@ -12,14 +12,14 @@ const file = path.join(__dirname, '../../src/assets/build.json');
 
 var data = { date: new Date().toISOString() };
 
-var cmd = 'cd ../../ && git symbolic-ref --short HEAD';
+var cmd = 'cd ../../ && git name-rev --name-only HEAD';
 
 exec(cmd, (err, stdout, stderr) => {
 
-	const name = stdout.trim();
+	let name = stdout.trim();
 
 	if (name) {
-
+		name = name.split('/').pop();
 		console.log(BLUE,'Building build.json with branch name ', name);
 		data.name = name;
 	}
