@@ -23,12 +23,14 @@ Object.keys(process.env).forEach((name) => {
 
 new Promise((resolve, reject) => {
 
-	var cmd = 'cd ../../ && git rev-parse --abbrev-ref HEAD';
+	var cmd = 'cd ../../ && git name-rev --name-only HEAD';
 	exec(cmd, (err, stdout, stderr) => {
 
-		const name = stdout.trim();
+		let name = stdout.trim();
 
 		if (name) {
+			name = name.split('/').pop();
+
 			console.log(BLUE,'Building build.json with branch name ', name);
 			build.name = name;
 			build.date = new Date().toISOString();
