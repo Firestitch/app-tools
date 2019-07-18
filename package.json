@@ -14,13 +14,13 @@
     "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
     "build": "npm-run-all -s env build:run build:json",
-    "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist",
+    "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --aot --outputPath=dist --outputHashing=all",
 
     "build:nonoptimized": "npm-run-all -s env build:nonoptimized:run build:json",
-    "build:nonoptimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=dist",
+    "build:nonoptimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=dist --outputHashing=all",
 
     "build:optimized": "npm-run-all -s env build:json build:optimized:run",
-    "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
+    "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=dist --outputHashing=all --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
     "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
     "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
