@@ -2,7 +2,7 @@
   "name": "tools",
   "scripts": {
     "serve": "npm-run-all -s env serve:run",
-    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
+    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --port=$npm_package_config_port",
 
     "serve:livereload": "npm-run-all -s env serve:livereload:run",
     "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
@@ -36,6 +36,7 @@
     "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
   },
   "config": {
-    "env": "local"
+    "env": "local",
+    "port": "4200"
   }
 }
