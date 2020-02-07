@@ -22,7 +22,7 @@
     "build:optimized": "npm-run-all -s env build:json build:optimized:run build:move",
     "build:optimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --configuration=$npm_config_env --aot --optimization=true --outputPath=build --outputHashing=all --prod --buildOptimizer=true --sourceMap=false --vendorChunk=true",
 
-    "build:move": "rimraf ../../frontend/dist && mv ../../frontend/build ../../frontend/dist",
+    "build:move": "rimraf ../../frontend/dist && move-cli ../../frontend/build ../../frontend/dist",
 
     "package:web": "npm-run-all -s build:optimized package:zip --platform=web",
     "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
