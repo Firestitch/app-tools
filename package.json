@@ -21,10 +21,10 @@
 
     "build:move": "rimraf ../../frontend/dist && move-cli ../../frontend/build ../../frontend/dist",
 
-    "package:web": "npm-run-all -s package:build-json build:run build:move package:zip --platform=web",
+    "package:web": "npm-run-all -s build-json:package build:run build:move package:zip --platform=web",
     "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
 
-    "package:app": "npm-run-all -s package:build-json build:run build:move package:zip-app --platform=app",
+    "package:app": "npm-run-all -s build-json:package build:run build:move package:zip-app --platform=app",
     "package:app:nonoptimized": "npm-run-all -s build:nonoptimized package:zip-app --platform=app",
 
     "build-json:package": "node ./scripts/build-package-json.js",

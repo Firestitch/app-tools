@@ -8,16 +8,16 @@ var cmd = 'cd ../../ && git name-rev --name-only HEAD';
 
 exec(cmd, (err, stdout, stderr) => {
 
-	let name = stdout.trim();
+	let version = stdout.trim();
 
-	if (name) {
-		name = name.split('/').pop();
-		console.log('Building build.json with branch name: ' + name);
+	if (version) {
+		version = version.split('/').pop();
+		console.log('Building build.json with branch version: ' + version);
 	}
 
 	if (stderr) {
 		console.error('Failed to get the current branch: ' + stderr);
 	}
 
-	build.save(name);
+	build.save(version);
 });

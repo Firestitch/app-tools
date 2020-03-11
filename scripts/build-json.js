@@ -2,11 +2,19 @@
 
 const fs = require('fs');
 const path = require('path');
-const file = path.join(__dirname, '../../src/assets/build.json');
+const buildJson = path.join(__dirname, '../../src/assets/build.json');
+const packageJson = require(path.join(__dirname, '../../package.json'));
 
 module.exports = {
-  save: function(name) {
-    const data = JSON.stringify({ name: name, date: new Date().toISOString() });
-    fs.writeFileSync(file, data);
+  save: function(version) {
+    const data = JSON.stringify(this.create(version));
+    fs.writeFileSync(buildJson, data);
+  },
+  create: function(version) {
+    return {
+      name: packageJson.name,
+      date: new Date().toISOString(),
+      version: version
+    }
   }
 }
