@@ -3,12 +3,10 @@
 const console  = require('./console');
 const fs = require('fs');
 const path = require('path');
-const build = require('./build-json');
-const exec = require('child_process').exec;
 const envFile = path.join(__dirname, '../../src/environments/env.ts');
-const packageJson = require(path.join(__dirname, '../../package.json'));
+const buildJson = require(path.join(__dirname, '../../src/assets/build.json'));
 
-var data = { build: {} };
+var data = { build: buildJson };
 var re = new RegExp('npm_config_(platform|env)');
 Object.keys(process.env).forEach((name) => {
 	var match = name.match(re);
@@ -18,28 +16,10 @@ Object.keys(process.env).forEach((name) => {
 	}
 });
 
-new Promise((resolve, reject) => {
+data = JSON.stringify(data);
 
-	var cmd = 'cd ../../ && git name-rev --name-only HEAD';
-	exec(cmd, (err, stdout, stderr) => {
+var output = 'export const env = ' + data + ';';
+console.log('Env Variables (env.ts) ' + data);
 
-		let version = stdout.trim();
+fs.writeFileSync(envFile, output);
 
-		if (version) {
-			version = version.split('/').pop();
-      console.log('Building build.json with branch version ' + version);
-      data.build = build.create(version);
-		}
-
-		resolve();
-	});
-})
-.then(() => {
-
-	data = JSON.stringify(data);
-
-	var output = 'export const env = ' + data + ';';
-	console.log('Env Variables (env.ts) ' + data);
-
-	fs.writeFileSync(envFile, output);
-});

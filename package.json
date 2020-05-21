@@ -13,22 +13,22 @@
     "serve:secure": "npm run env & npm run serve:secure:run",
     "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
 
-    "build": "npm-run-all -s env build-json:default build:run build:move",
+    "build": "npm-run-all -s build-json:default env build:run build:move",
     "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build",
 
-    "build:nonoptimized": "npm-run-all -s env build-json:default build:nonoptimized:run build:move",
+    "build:nonoptimized": "npm-run-all -s build-json:default env build:nonoptimized:run build:move",
     "build:nonoptimized:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build --optimization=false --buildOptimizer=false --sourceMap=true",
 
     "build:move": "rimraf ../../frontend/dist && move-cli ../../frontend/build ../../frontend/dist",
 
-    "package:web": "npm-run-all -s build-json:package build:run build:move package:zip --platform=web",
+    "package:web": "npm-run-all -s build-json:package env build:run build:move package:zip --platform=web",
     "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
 
-    "package:app": "npm-run-all -s build-json:package build:run build:move package:zip-app --platform=app",
+    "package:app": "npm-run-all -s build-json:package env build:run build:move package:zip-app --platform=app",
     "package:app:nonoptimized": "npm-run-all -s build:nonoptimized package:zip-app --platform=app",
 
-    "build-json:package": "node ./scripts/build-package-json.js",
-    "build-json:default": "node ./scripts/build.js",
+    "build-json:package": "node ./scripts/build-package.js",
+    "build-json:default": "node ./scripts/build-default.js",
 
     "env": "npm-run-all -s env:display env:build",
     "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
