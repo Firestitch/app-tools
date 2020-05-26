@@ -4,11 +4,19 @@ const build = require('./build-json');
 const prompts = require('prompts');
 
 (async () => {
-  const response = await prompts({
-    type: 'text',
-    name: 'version',
-    message: 'Please enter the version number?',
-  });
 
-  build.save(response.version);
+  let version = process.env.npm_package_config_version;
+
+  if (!version) {
+
+    const response = await prompts({
+      type: 'text',
+      name: 'version',
+      message: 'Please enter the version number?',
+    });
+
+    version = response.version;
+  }
+
+  build.save(version);
 })();

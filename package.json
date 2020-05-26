@@ -38,6 +38,7 @@
   },
   "config": {
     "env": "local",
-    "port": "4200"
+    "port": "4200",
+    "version": ""
   }
 }
