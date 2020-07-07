@@ -2,7 +2,7 @@
   "name": "tools",
   "scripts": {
     "serve": "npm-run-all -s build-json:default env serve:run",
-    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --port=$npm_package_config_port --aot=false",
+    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --port=$npm_package_config_port",
 
     "serve:livereload": "npm-run-all -s build-json:default env serve:livereload:run",
     "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
