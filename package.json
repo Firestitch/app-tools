@@ -21,8 +21,8 @@
 
     "build:move": "rimraf ../../frontend/dist && move-cli ../../frontend/build ../../frontend/dist",
 
-    "package:web": "npm-run-all -s build-json:package env build:run build:move package:zip --platform=web",
-    "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip --platform=web",
+    "package:web": "npm-run-all -s build-json:package env build:run build:move package:zip-delete package:zip --platform=web",
+    "package:web:nonoptimized": "npm-run-all -s build:nonoptimized package:zip-delete package:zip --platform=web",
 
     "package:app": "npm-run-all -s build-json:package env build:run build:move package:zip-app --platform=app",
     "package:app:nonoptimized": "npm-run-all -s build:nonoptimized package:zip-app --platform=app",
@@ -33,6 +33,7 @@
     "env": "npm-run-all -s env:display env:build",
     "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
     "env:build": "npm-cross-var node ./scripts/env.js",
+    "package:zip-delete": "del-cli --force ../../package.zip",
     "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
     "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
   },
