@@ -11,7 +11,7 @@
     "serve:run-aot": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
 
     "serve:secure": "npm-run-all -s build-json:default env serve:secure:run",
-    "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key './ssl/localhost.key' --ssl-cert './ssl/localhost.crt'",
+    "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key tools/ssl/localhost.key --ssl-cert tools/ssl/localhost.crt",
 
     "build": "npm-run-all -s build-json:default env build:run build:move",
     "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build",
