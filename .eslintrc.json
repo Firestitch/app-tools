@@ -127,6 +127,12 @@
             "selector": ["variable", "function"],
             "format": ["camelCase"],
             "leadingUnderscore": "allow"
+          },
+          {
+            "selector": ["variable"],
+            "modifiers": ["const", "exported"],
+            "format": ["PascalCase"],
+            "leadingUnderscore": "allow"
           }
         ],
         "@typescript-eslint/no-shadow": "error",
