@@ -2,16 +2,16 @@
   "name": "tools",
   "scripts": {
     "serve": "npm-run-all -s build-json:default env serve:run",
-    "serve:run": "npm-cross-var ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --port=$npm_package_config_port",
+    "serve:run": "npm-cross-var node --max_old_space_size=2000 ./../node_modules/@angular/cli/bin/ng serve --live-reload=false --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --port=$npm_package_config_port",
 
     "serve:livereload": "npm-run-all -s build-json:default env serve:livereload:run",
-    "serve:livereload:run": "npm-cross-var ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
+    "serve:livereload:run": "npm-cross-var node --max_old_space_size=2000 ./../node_modules/@angular/cli/bin/ng serve --live-reload=true --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env",
 
     "serve:aot": "npm-run-all -s build-json:default env serve:run-aot",
-    "serve:run-aot": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
+    "serve:run-aot": "npm-cross-var node --max_old_space_size=2000 ./../node_modules/@angular/cli/bin/ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --aot",
 
     "serve:secure": "npm-run-all -s build-json:default env serve:secure:run",
-    "serve:secure:run": "npm-cross-var ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key tools/ssl/localhost.key --ssl-cert tools/ssl/localhost.crt",
+    "serve:secure:run": "npm-cross-var node --max_old_space_size=2000 ./../node_modules/@angular/cli/bin/ng serve --proxy-config proxies/$npm_config_env.conf.json --configuration=$npm_config_env --ssl --ssl-key tools/ssl/localhost.key --ssl-cert tools/ssl/localhost.crt",
 
     "build": "npm-run-all -s build-json:default env build:run build:move",
     "build:run": "npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build",
