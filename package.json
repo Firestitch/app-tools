@@ -33,8 +33,8 @@
     "env": "npm-run-all -s env:display env:build",
     "env:display": "npm-cross-var echo Environment: $npm_config_env, Platform: $npm_config_platform",
     "env:build": "npm-cross-var node ./scripts/env.js",
-    "package:zip-delete": "del-cli --force ../../package.zip",
-    "package:zip": "cd ../../ && bestzip package.zip ./frontend/dist ./backend ./framework ./maintenance",
+    "package:zip-delete": "npm-cross-var del-cli --force ../../$npm_config_name.zip",
+    "package:zip": "cd ../../ && npm-cross-var bestzip $npm_config_name.zip ./frontend/dist ./backend ./framework ./maintenance",
     "package:zip-app": "cd ../../frontend/dist && bestzip ../../package-app.zip ./*"
   },
   "config": {
