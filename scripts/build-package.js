@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
-const build = require('./build-json');
-const prompts = require('prompts');
-const path = require('path');
-const fs = require('fs');
-const packageFile = path.join(__dirname, '../../package.json');
+var build = require('./build-json');
+var prompts = require('prompts');
+var path = require('path');
+var fs = require('fs');
+var packageFile = path.join(__dirname, '../../package.json');
 
 (async () => {
 
-  const packageJson = require(packageFile);
+  var packageJson = require(packageFile);
 
-  let version = process.env.npm_package_config_version;
+  var version = process.env.npm_package_config_version;
 
-  if (!version) {
+  if (!version && !packageJson.version) {
 
-    const response = await prompts({
+    var response = await prompts({
       type: 'text',
       name: 'version',
       message: 'Please enter the version number?',
@@ -22,11 +22,9 @@ const packageFile = path.join(__dirname, '../../package.json');
     });
 
     version = response.version;
+    packageJson.version = version;
+
+    fs.writeFileSync(packageFile, JSON.stringify(packageJson,null,2));
+    build.save();
   }
-
-  packageJson.version = version;
-
-  fs.writeFileSync(packageFile, JSON.stringify(packageJson,null,2));
-
-  build.save();
 })();
