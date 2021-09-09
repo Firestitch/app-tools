@@ -289,8 +289,9 @@
                 "group": "unknown"
               },
               {
-                "pattern": "@lib/**",
-                "group": "external"
+                "pattern": "@libs/**",
+                "group": "external",
+                "position": "after"
               },
               {
                 "pattern": "@app/**",
