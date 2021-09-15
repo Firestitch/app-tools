@@ -17,7 +17,7 @@
     "build:run": "cross-env NG_PERSISTENT_BUILD_CACHE=1 npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build",
 
     "build:app": "npm-run-all -s build-json:default env build:app:run build:move",
-    "build:app:run": "cross-env NG_PERSISTENT_BUILD_CACHE=1 npm-cross-var node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build --optimization=false --sourceMap=true",
+    "build:app:run": "npm-cross-var NG_PERSISTENT_BUILD_CACHE=1 node --max_old_space_size=8000 ./../node_modules/@angular/cli/bin/ng build --progress=false --configuration=$npm_config_env --outputPath=build --optimization=false --sourceMap=true",
 
     "build:move": "rimraf ../../frontend/dist && move-cli ../../frontend/build ../../frontend/dist",
 
