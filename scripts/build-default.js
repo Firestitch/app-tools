@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const build = require('./build-json');
+var build = require('./build-json');
 
 build.save();

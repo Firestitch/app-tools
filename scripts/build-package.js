@@ -24,7 +24,8 @@ var packageFile = path.join(__dirname, '../../package.json');
     version = response.version;
     packageJson.version = version;
 
-    fs.writeFileSync(packageFile, JSON.stringify(packageJson,null,2));
-    build.save();
+    fs.writeFileSync(packageFile, JSON.stringify(packageJson,null,2));    
   }
+  
+  build.save();
 })();
