@@ -5,7 +5,7 @@ const { Build } = require('./libs/build');
 
 
 const options = {
-  env: env.getArg('dev'),
+  env: env.getArg('env', 'dev'),
 };
 
 (new Build(options)).run();

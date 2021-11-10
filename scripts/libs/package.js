@@ -17,7 +17,9 @@ class Package extends Build {
     var zipFileName = `${packageJson.name}.zip`;
     var zipFile = path.join(env.getInstanceDir(), zipFileName);
 
-    fs.rmSync(zipFile, { force: true });    
+    try {
+      fs.rmSync(zipFile, { force: true });
+    } catch(e) {}
 
     super.run()
     .then(() => {
@@ -38,7 +40,7 @@ class Package extends Build {
       });
     });
   }
-  
+
 }
 
 module.exports = {

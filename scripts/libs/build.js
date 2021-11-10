@@ -11,14 +11,17 @@ class Build extends Builder {
       this.init()
       .then(() => {
         var dist = env.getDistDir();
-        fs.rmSync(dist, { recursive: true, force: true });
+
+        try {
+          fs.rmSync(dist, { recursive: true, force: true });
+        } catch(e) {}
 
         var cmd_ = 'cross-env NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng';
 
         var args = [
           'build',
-          `--progress=false`,      
-          `--outputPath=dist`, 
+          `--progress=false`,
+          `--outputPath=dist`,
           `--configuration=${this.options.env}`,
         ];
 
