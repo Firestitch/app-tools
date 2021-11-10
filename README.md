@@ -3,10 +3,10 @@
 
 |  Arg | Value  |  Default |
 | ------------ | ------------ | ------------ |
-|  env |  string  | local |
-|  port |  number | package.json ￫ config ￫ port |
-|  secure |  boolean | false |
-|  live-reload |  boolean |  false |
+|  --env |  string  | local |
+|  --port |  number | package.json ￫ config ￫ port |
+|  --secure |  boolean | false |
+|  --live-reload |  boolean |  false |
 
 
 # Build
@@ -14,7 +14,7 @@
 
 |  Arg | Value  | Default |
 | ------------ | ------------ | ------------ |
-|  env |  string  | dev |
+|  --env |  string  | dev |
 
 
 # Package
@@ -22,4 +22,4 @@
 
 |  Arg | Value  | Default |
 | ------------ | ------------ | ------------ |
-|  env |  string  | production |
+|  --env |  string  | production |
