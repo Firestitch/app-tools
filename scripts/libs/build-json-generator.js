@@ -24,6 +24,8 @@ class BuildJsonGenerator {
       initial: this.version,
     });
 
+    console.log('');
+
     this.version = response.version;   
 
     this.packageJson.version = this.version;    

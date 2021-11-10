@@ -3,8 +3,9 @@
 var env = require('./libs/env');
 const { Build } = require('./libs/build');
 
+
 const options = {
-  env: env.getEnv('production'),
+  env: env.getArg('dev'),
 };
 
 (new Build(options)).run();

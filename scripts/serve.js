@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-var env = require('./libs/env');
-var { Serve } = require('./libs/serve');
+const env = require('./libs/env');
+const { Serve } = require('./libs/serve');
+
 
 const options = {
   env: env.getEnv(),

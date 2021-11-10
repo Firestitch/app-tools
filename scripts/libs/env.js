@@ -4,8 +4,11 @@ var path = require('path');
 
 module.exports = {
   getFrontendDir: function() {
-    return path.join(__dirname, '../../../');
+    return path.join(this.getInstanceDir(), 'frontend');
   }, 
+  getInstanceDir: function() {
+    return path.join(__dirname, '../../../../');
+  }, 	
   getDistDir: function() {
     return path.join(this.getFrontendDir(), 'dist');
   },  

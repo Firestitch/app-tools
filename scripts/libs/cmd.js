@@ -7,13 +7,12 @@ var console = require('./console');
 module.exports = {
   exec: function(cmd, args, options) {
 		console.log(`${cmd} ${args.join(' ')}`);
-    spawn(cmd, args,  
+    return spawn(cmd, args,  
 			{
 				...options,
 				shell: true, 
 				stdio: "inherit" 
 			}
-		);
-		
+		);		
   },
 }
