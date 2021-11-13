@@ -38,7 +38,11 @@ class Build extends Builder {
         var process = cmd.exec(cmd_, args, { cwd: '../' });
 
         process.on('close', function (code) {
-          code ? reject() : resolve();
+          if(code) {
+            process.exit(1);
+          }
+          
+          resolve();
         });
       });
     });
