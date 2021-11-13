@@ -39,7 +39,7 @@ class Build extends Builder {
 
         process.on('close', function (code) {
           if(code) {
-            process.exit(1);
+            env.getProcess().exit(1);
           }
           
           resolve();
