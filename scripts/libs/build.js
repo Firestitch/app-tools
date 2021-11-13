@@ -15,8 +15,10 @@ class Build extends Builder {
         try {
           fs.rmSync(dist, { recursive: true, force: true });
         } catch(e) {}
+        
+        var isWin = env.getProcess().platform === 'win32';
 
-        var cmd_ = 'cross-env NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng';
+        var cmd_ = `${isWin ? 'set ' : ''}NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng`;
 
         var args = [
           'build',

@@ -2,7 +2,11 @@
 
 var path = require('path');
 
+
 module.exports = {
+	getProcess: function() {
+		return process;
+	},
   getFrontendDir: function() {
     return path.join(this.getInstanceDir(), 'frontend');
   },
