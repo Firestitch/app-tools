@@ -38,10 +38,6 @@ class Build extends Builder {
         var process = cmd.exec(cmd_, args, { cwd: '../' });
 
         process.on('close', function (code) {
-          if(code) {
-            env.getProcess().exit(1);
-          }
-          
           resolve();
         });
       });
@@ -50,5 +46,5 @@ class Build extends Builder {
 }
 
 module.exports = {
-  Build: Build,
+  Build,
 };
