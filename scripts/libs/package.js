@@ -13,30 +13,37 @@ class Package extends Build {
   }
 
   run() {
-    var packageJson = env.getPackageJson();
-    var zipFileName = `${packageJson.name}.zip`;
-    var zipFile = path.join(env.getInstanceDir(), zipFileName);
+    return new Promise((resolve, reject) => {
+      this.init()
+      .then(() => {
 
-    try {
-      fs.rmSync(zipFile, { force: true });
-    } catch(e) {}
+        var packageJson = env.getPackageJson();
+        var zipFileName = `${packageJson.name}.zip`;
+        var zipFile = path.join(env.getInstanceDir(), zipFileName);
 
-    super.run()
-    .then(() => {
-      zip({
-        source: [
-          'frontend/dist',
-          'backend',
-          'framework',
-          'maintenance'
-        ],
-        destination: zipFile,
-        cwd: env.getInstanceDir(),
-      }).then(function() {
-        console.log(`Created Package ${zipFile}`);
-      }).catch(function(err) {
-        console.error(err.stack);
-        process.exit(1);
+        try {
+          fs.rmSync(zipFile, { force: true });
+        } catch(e) {}
+
+        super.run()
+        .then(() => {
+          zip({
+            source: [
+              'frontend/dist',
+              'backend',
+              'framework',
+              'maintenance'
+            ],
+            destination: zipFile,
+            cwd: env.getInstanceDir(),
+          }).then(function() {
+            console.log(`Created Package ${zipFile}`);
+            resolve();
+          }).catch(function(err) {
+            console.error(err.stack);
+            process.exit(1);
+          });
+        });
       });
     });
   }
