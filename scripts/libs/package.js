@@ -20,6 +20,7 @@ class Package extends Build {
         var packageJson = env.getPackageJson();
         var zipFileName = `${packageJson.name}.zip`;
         var zipFile = path.join(env.getInstanceDir(), zipFileName);
+        var includes = env.getArg('include') ? env.getArg('include').split(',') : [];
 
         try {
           fs.rmSync(zipFile, { force: true });
@@ -32,7 +33,8 @@ class Package extends Build {
               'frontend/dist',
               'backend',
               'framework',
-              'maintenance'
+              'maintenance',
+              ...includes,
             ],
             destination: zipFile,
             cwd: env.getInstanceDir(),
