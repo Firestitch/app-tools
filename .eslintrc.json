@@ -132,7 +132,11 @@
             "selector": ["variable"],
             "modifiers": ["const", "exported"],
             "format": ["PascalCase"],
-            "leadingUnderscore": "allow"
+            "leadingUnderscore": "allow",
+            "filter": {
+              "regex": "^(routes)$",
+              "match": false
+            }
           }
         ],
         "@typescript-eslint/no-shadow": "error",
