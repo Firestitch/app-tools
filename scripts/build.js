@@ -5,7 +5,8 @@ const { Build } = require('./libs/build');
 
 
 const options = {
-  env: env.getArg('env', 'dev'),
+  configuration: env.getConfiguration('dev'),
+  platform: env.getArg('platform','web'),
 };
 
 (new Build(options)).run();

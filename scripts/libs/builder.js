@@ -11,7 +11,7 @@ class Builder {
 
   constructor(options) { 
     this.options = options;
-    this.envGenerator = new EnvGenerator(this.options.env, this.options.platform);
+    this.envGenerator = new EnvGenerator(this.options.configuration, this.options.platform);
     this.buildJsonGenerator = new BuildJsonGenerator();
   }
 

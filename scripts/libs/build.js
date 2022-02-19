@@ -24,7 +24,7 @@ class Build extends Builder {
           'build',
           `--progress=false`,
           `--outputPath=dist`,
-          `--configuration=${this.options.env}`,
+          `--configuration=${this.options.configuration}`,
         ];
 
         if(env.isPlatformApp()) {

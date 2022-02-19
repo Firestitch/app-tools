@@ -25,9 +25,9 @@ module.exports = {
   getPackageJsonFile: function() {
     return path.join(this.getFrontendDir(), 'package.json');
   },
-	getEnv: function(default_ = 'local') {
+	getConfiguration: function(default_ = 'local') {
 		var packageJson = this.getPackageJson();
-		return this.getArg('env') || packageJson.config.env || default_;
+		return this.getArg('configuration') || packageJson.config.configuration || this.getArg('env') || packageJson.config.env || default_;
 	},
 	getPort: function(default_ = 9999) {
 		var packageJson = this.getPackageJson();

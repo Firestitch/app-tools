@@ -4,25 +4,19 @@ var fs = require('fs');
 var path = require('path');
 var env_ = require('./env');
 
-
 class EnvGenerator {
-  env = null;
+  configuration = null;
   platform = null;
 
-  constructor(env, platform) { 
-    this.env = env;
+  constructor(configuration, platform) { 
+    this.configuration = configuration;
     this.platform = platform;
   }    
 
   save() {
-    var data = JSON.stringify({
-      env: this.env,
-      platform: this.platform,
-    });
+    var data = `export const env = { configuration: '${this.configuration}', platform: '${this.platform}' };`;
 
-    var code = `export const env = ${data}`;
-
-    fs.writeFileSync(path.join(env_.getFrontendDir(), 'src/environments/env.ts'), code);
+    fs.writeFileSync(path.join(env_.getFrontendDir(), 'src/environments/env.ts'), data);
   }
 }
 
