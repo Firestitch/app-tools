@@ -9,7 +9,12 @@ class Package extends Build {
 
   init() {
     this.generateEnv();
-    return this.buildJsonGenerator.promptVersion();
+    return new Promise((resolve, reject) => {
+      this.buildJsonGenerator.promptVersion().then((response) => {
+        this.generateBuildJson();
+        resolve(response);
+      });
+    });    
   }
 
   run() {

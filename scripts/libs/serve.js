@@ -10,9 +10,11 @@ class Serve extends Builder {
       var args = [
         'serve',
         `--port=${this.options.port}`,      
+        '--host=::1',
+        '--disable-host-check',
+        `--live-reload=${this.options.liveReload}`,
         `--proxy-config=proxies/${this.options.configuration}.conf.json`, 
-        `--configuration=${this.options.configuration}`,
-        `--live-reload=${this.options.liveReload}`
+        `--configuration=${this.options.configuration}`,        
       ];
       
       if(this.options.secure) {
