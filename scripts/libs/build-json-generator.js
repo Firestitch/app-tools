@@ -17,19 +17,22 @@ class BuildJsonGenerator {
   }  
 
   async promptVersion() {
-    const onSubmit = (prompt, version) => {
-      this.version = version;   
-      this.packageJson.version = this.version;    
-      fs.writeFileSync(env.getPackageJsonFile(), JSON.stringify(this.packageJson,null,2));  
-      console.log('');
-    };
+    return new Promise((resolve) => {
+      const onSubmit = (prompt, version) => {
+        this.version = version;   
+        this.packageJson.version = this.version;    
+        fs.writeFileSync(env.getPackageJsonFile(), JSON.stringify(this.packageJson,null,2).trim());  
+        console.log('');
+        resolve(version);
+      };
 
-    var response = await prompts({
-      type: 'text',
-      name: 'version',
-      message: 'Please enter the version number?',
-      initial: this.version,
-    }, { onSubmit });
+      prompts({
+        type: 'text',
+        name: 'version',
+        message: 'Please enter the version number?',
+        initial: this.version,
+      }, { onSubmit });
+    });
   }
 
   save() {
