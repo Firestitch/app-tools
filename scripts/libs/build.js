@@ -35,7 +35,7 @@ class Build extends Builder {
           ];
         }
 
-        var process = cmd.exec(cmd_, args, { cwd: '../' });
+        var process = cmd.exec(cmd_, args);
 
         process.on('close', function (code) {
           resolve();

@@ -8,10 +8,10 @@ module.exports = {
 		return process;
 	},
   getFrontendDir: function() {
-    return path.join(this.getInstanceDir(), 'frontend');
+    return process.cwd();
   },
   getInstanceDir: function() {
-    return path.join(__dirname, '../../../../');
+    return path.join(this.getFrontendDir(), '..');
   },
   getDistDir: function() {
     return path.join(this.getFrontendDir(), 'dist');
@@ -41,6 +41,18 @@ module.exports = {
 		return this.getPlatform() === 'app';
 	},
 	getArg(name, default_ = null) {
+		const arg = (process.argv || [])
+			.map((arg) => {
+				return arg.match(/--([^=]+)=(.*)/);
+			})
+			.find((arg) => {
+				return arg && arg[1] === name;
+			});
+
+		if(arg) {
+			return arg[2];
+		}
+
 		name = String(name).replace('-', '_');
 		return process.env[`npm_config_${name}`] || default_;
 	}

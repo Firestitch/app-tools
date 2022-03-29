@@ -26,7 +26,7 @@ class Serve extends Builder {
         ];
       }
       
-      cmd.exec('ng', args, { cwd: '../' });
+      cmd.exec('ng', args);
     });
   }
 }

@@ -10,7 +10,7 @@ class Package extends Build {
   run() {
     return new Promise((resolve, reject) => {
       this.buildJsonGenerator.promptVersion()
-      .then((response) => {
+      .then(() => {
         this.init()
         .then(() => {
 
