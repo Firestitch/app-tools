@@ -21,8 +21,8 @@ class Serve extends Builder {
         args = [
           ...args,
           '--ssl',
-          '--ssl-key=tools/ssl/localhost.key',
-          '--ssl-cert=tools/ssl/localhost.crt',
+          '--ssl-key=node_modules/@firestitch/app-tools/ssl/localhost.key',
+          '--ssl-cert=node_modules/@firestitch/app-tools/ssl/localhost.crt',
         ];
       }
       
