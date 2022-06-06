@@ -29,6 +29,7 @@ class Build extends Builder {
           'build',
           `--progress=false`,
           `--outputPath=dist`,
+          `--output-hashing=all`,
           `--configuration=${options.configuration}`,
         ];
 
