@@ -32,6 +32,10 @@ class Build extends Builder {
           `--output-hashing=all`,
           `--configuration=${options.configuration}`,
         ];
+        
+        if(env.getProject()) {
+          args.push(`--project=${env.getProject()}`);
+        }
 
         if(env.isPlatformApp()) {
           args = [

@@ -16,6 +16,10 @@ class Serve extends Builder {
         `--proxy-config=proxies/${this.options.configuration}.conf.json`, 
         `--configuration=${this.options.configuration}`,        
       ];
+        
+      if(env.getProject()) {
+        args.push(`--project=${env.getProject()}`);
+      }
       
       if(this.options.secure) {
         args = [

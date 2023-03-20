@@ -41,6 +41,9 @@ module.exports = {
 		var packageJson = this.getPackageJson();
 		return this.getArg('platform') || packageJson.config.platform || default_;
 	},
+	getProject: function() {
+		return this.getArg('project');
+	},
 	isPlatformApp: function() {
 		return this.getPlatform() === 'app';
 	},
