@@ -16,7 +16,7 @@ class EnvGenerator {
   save() {
     var data = `export const env = { configuration: '${this.configuration}', platform: '${this.platform}' };`;
 
-    fs.writeFileSync(path.join(env_.getFrontendDir(), 'src/environments/env.ts'), data);
+    fs.writeFileSync(path.join(env_.getSrcDir(), 'environments/env.ts'), data);
   }
 }
 

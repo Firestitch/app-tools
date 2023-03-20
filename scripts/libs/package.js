@@ -35,13 +35,15 @@ class Package extends Build {
               ],
               destination: zipFile,
               cwd: env.getInstanceDir(),
-            }).then(function() {
-              console.log(`Created Package ${zipFile}`);
-              resolve();
-            }).catch(function(err) {
-              console.error(err.stack);
-              process.exit(1);
-            });
+            })
+              .then(function() {
+                console.log(`Created Package ${zipFile}`);
+                resolve();
+              })
+              .catch(function(err) {
+                console.error(err.stack);
+                process.exit(1);
+              });
           });
         });
       });

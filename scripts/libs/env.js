@@ -13,11 +13,15 @@ module.exports = {
   getInstanceDir: function() {
     return path.join(this.getFrontendDir(), '..');
   },
+  getSrcDir: function() {
+		const src = this.getArg('src') ? this.getArg('src') : 'src';
+    return path.join(this.getFrontendDir(), src);
+  },
   getDistDir: function() {
     return path.join(this.getFrontendDir(), 'dist');
   },
 	getBuildJsonFile: function() {
-    return path.join(this.getFrontendDir(), 'src/assets/build.json');
+    return path.join(this.getSrcDir(), 'assets/build.json');
   },
   getPackageJson: function() {
     return require(this.getPackageJsonFile());
