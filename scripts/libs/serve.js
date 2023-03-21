@@ -1,5 +1,6 @@
 const { Builder } = require('./builder');
 var cmd = require('./cmd');
+var env = require('./env');
 
 
 class Serve extends Builder {
