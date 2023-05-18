@@ -6,15 +6,15 @@ var env_ = require('./env');
 
 class EnvGenerator {
   configuration = null;
-  platform = null;
+  native = null;
 
-  constructor(configuration, platform) { 
+  constructor(configuration, native) { 
     this.configuration = configuration;
-    this.platform = platform;
+    this.native = native;
   }    
 
   save() {
-    var data = `export const env = { configuration: '${this.configuration}', platform: '${this.platform}' };`;
+    var data = `export const env = { configuration: '${this.configuration}', native: ${this.native ? 'true' : 'false'} };`;
 
     fs.writeFileSync(path.join(env_.getSrcDir(), 'environments/env.ts'), data);
   }

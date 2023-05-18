@@ -37,7 +37,7 @@ class Build extends Builder {
           args.push(`--project=${env.getProject()}`);
         }
 
-        if(env.isPlatformApp()) {
+        if(env.isNative()) {
           args = [
             ...args,
             `--optimization=false`,

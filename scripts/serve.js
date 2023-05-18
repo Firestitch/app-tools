@@ -9,7 +9,7 @@ const options = {
   port: env.getPort(),
   liveReload: env.getArg('live-reload','false'),
   secure: env.getArg('secure',false),
-  platform: env.getArg('platform','web'),
+  native: env.getArg('native',false),
 };
 
 (new Serve(options)).run();

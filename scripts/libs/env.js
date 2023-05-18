@@ -37,15 +37,11 @@ module.exports = {
 		var packageJson = this.getPackageJson();
 		return this.getArg('port') || packageJson.config.port || default_;
 	},
-	getPlatform: function(default_ = 'web') {
-		var packageJson = this.getPackageJson();
-		return this.getArg('platform') || packageJson.config.platform || default_;
-	},
 	getProject: function() {
 		return this.getArg('project');
 	},
-	isPlatformApp: function() {
-		return this.getPlatform() === 'app';
+	isNative: function() {
+		return !!this.getArg('native');
 	},
 	getArg(name, default_ = null) {
 		const arg = (process.argv || [])

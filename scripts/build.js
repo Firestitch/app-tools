@@ -6,7 +6,7 @@ const { Build } = require('./libs/build');
 
 const options = {
   configuration: env.getConfiguration('dev'),
-  platform: env.getArg('platform','web'),
+  native: env.getArg('native',false),
   postBuild: env.getArg('postBuild'),
   preBuild: env.getArg('preBuild'),
 };

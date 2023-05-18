@@ -5,7 +5,7 @@ const { Package } = require('./libs/package');
 
 const options = {
   configuration: env.getConfiguration('production'),
-  platform: env.getPlatform(),
+  native: env.getNative(),
   postBuild: env.getArg('postBuild'),
   preBuild: env.getArg('preBuild'),
 };
