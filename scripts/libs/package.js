@@ -13,11 +13,11 @@ class Package extends Build {
       .then(() => {
         this.init()
         .then(() => {
-
-          var packageJson = env.getPackageJson();
-          var zipFileName = `${packageJson.name}.zip`;
-          var zipFile = path.join(env.getInstanceDir(), zipFileName);
-          var includes = env.getArg('includes') ? env.getArg('includes').split(',') : [];
+          var project = env.project() ? `-${env.project()}` : '';
+          var packageJson = env.packageJson();
+          var zipFileName = `${packageJson.name}${project}.zip`;
+          var zipFile = path.join(env.instanceDir(), zipFileName);
+          var includes = env.arg('includes') ? env.arg('includes').split(',') : [];
 
           try {
             fs.rmSync(zipFile, { force: true });
@@ -34,7 +34,7 @@ class Package extends Build {
                 ...includes,
               ],
               destination: zipFile,
-              cwd: env.getInstanceDir(),
+              cwd: env.instanceDir(),
             })
               .then(function() {
                 console.log(`Created Package ${zipFile}`);

@@ -11,7 +11,7 @@ class BuildJsonGenerator {
   packageJson  = null;
 
   constructor() { 
-    this.packageJson = env.getPackageJson();
+    this.packageJson = env.packageJson();
     this.version = this.packageJson.version;
     this.name = this.packageJson.name;
   }  
@@ -21,7 +21,7 @@ class BuildJsonGenerator {
       const onSubmit = (prompt, version) => {
         this.version = version;   
         this.packageJson.version = this.version;    
-        fs.writeFileSync(env.getPackageJsonFile(), JSON.stringify(this.packageJson,null,2).trim());  
+        fs.writeFileSync(env.packageJsonFile(), JSON.stringify(this.packageJson,null,2).trim());  
         console.log('');
         resolve(version);
       };
@@ -42,7 +42,7 @@ class BuildJsonGenerator {
       date: new Date().toISOString(),
     });
 
-    fs.writeFileSync(env.getBuildJsonFile(), data);
+    fs.writeFileSync(env.buildJsonFile(), data);
   }
 }
 

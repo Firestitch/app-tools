@@ -18,8 +18,8 @@ class Serve extends Builder {
         `--configuration=${this.options.configuration}`,        
       ];
         
-      if(env.getProject()) {
-        args.push(`--project=${env.getProject()}`);
+      if(env.project()) {
+        args.push(`--project=${env.project()}`);
       }
       
       if(this.options.secure) {

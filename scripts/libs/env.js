@@ -4,46 +4,55 @@ var path = require('path');
 
 
 module.exports = {
-	getProcess: function() {
+	process: function() {
 		return process;
 	},
-  getFrontendDir: function() {
+  frontendDir: function() {
     return process.cwd();
   },
-  getInstanceDir: function() {
-    return path.join(this.getFrontendDir(), '..');
+  instanceDir: function() {
+    return path.join(this.frontendDir(), '..');
   },
-  getSrcDir: function() {
-		const src = this.getArg('src') ? this.getArg('src') : 'src';
-    return path.join(this.getFrontendDir(), src);
+  srcDir: function() {
+		const src = this.arg('src') ? this.arg('src') : 'src';
+    return path.join(this.frontendDir(), src);
   },
-  getDistDir: function() {
-    return path.join(this.getFrontendDir(), 'dist');
+  distDir: function() {
+    return path.join(this.frontendDir(), this.outputDir());
   },
-	getBuildJsonFile: function() {
-    return path.join(this.getSrcDir(), 'assets/build.json');
+	buildJsonFile: function() {
+    return path.join(this.srcDir(), 'assets/build.json');
   },
-  getPackageJson: function() {
-    return require(this.getPackageJsonFile());
+  packageJson: function() {
+    return require(this.packageJsonFile());
   },
-  getPackageJsonFile: function() {
-    return path.join(this.getFrontendDir(), 'package.json');
+  packageJsonFile: function() {
+    return path.join(this.frontendDir(), 'package.json');
   },
-	getConfiguration: function(default_ = 'local') {
-		var packageJson = this.getPackageJson();
-		return this.getArg('configuration') || packageJson.config.configuration || this.getArg('env') || packageJson.config.env || default_;
+	configuration: function(default_ = 'local') {
+		var packageJson = this.packageJson();
+		return this.arg('configuration') || packageJson.config.configuration || this.arg('env') || packageJson.config.env || default_;
 	},
-	getPort: function(default_ = 9999) {
-		var packageJson = this.getPackageJson();
-		return this.getArg('port') || packageJson.config.port || default_;
+	port: function(default_ = 9999) {
+		var packageJson = this.packageJson();
+		return this.arg('port') || packageJson.config.port || default_;
 	},
-	getProject: function() {
-		return this.getArg('project');
+	project: function() {
+		return this.arg('project');
 	},
-	isNative: function() {
-		return !!this.getArg('native');
+	outputDir: function() {
+		return this.arg('outputDir', 'dist');
 	},
-	getArg(name, default_ = null) {
+	native: function() {
+		return !!this.arg('native');
+	},
+	postBuild: function() {
+		return this.arg('postBuild');
+	},
+	preBuild: function() {
+		return this.arg('preBuild');
+	},
+	arg(name, default_ = null) {
 		const arg = (process.argv || [])
 			.map((arg) => {
 				return arg.match(/--([^=]+)=(.*)/);

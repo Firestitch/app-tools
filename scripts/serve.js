@@ -5,11 +5,11 @@ const { Serve } = require('./libs/serve');
 
 
 const options = {
-  configuration: env.getConfiguration(),
-  port: env.getPort(),
-  liveReload: env.getArg('live-reload','false'),
-  secure: env.getArg('secure',false),
-  native: env.getArg('native',false),
+  configuration: env.configuration(),
+  port: env.port(),
+  liveReload: env.arg('live-reload','false'),
+  secure: env.arg('secure',false),
+  native: env.arg('native',false),
 };
 
 (new Serve(options)).run();

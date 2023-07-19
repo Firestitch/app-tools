@@ -18,7 +18,7 @@ module.exports = {
 
 		process.on('close', function (code) {
 			if(code) {
-				env.getProcess().exit(code);
+				env.process().exit(code);
 			}
 		});
 

@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 var { BuildJsonGenerator } = require('./build-json-generator');
+const env = require('./env');
 var { EnvGenerator } = require('./env-generator');
 
 
 class Builder {
-  options = {};
+  configuration = null;
   envGenerator = null;
   buildJsonGenerator = null;
 
-  constructor(options) { 
-    this.options = options;
-    this.envGenerator = new EnvGenerator(this.options.configuration, this.options.native);
+  constructor(configuration) { 
+    this.envGenerator = new EnvGenerator(configuration, env.native());
     this.buildJsonGenerator = new BuildJsonGenerator();
   }
 
