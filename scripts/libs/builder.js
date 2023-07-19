@@ -11,6 +11,7 @@ class Builder {
   buildJsonGenerator = null;
 
   constructor(configuration) { 
+    this.configuration = configuration;
     this.envGenerator = new EnvGenerator(configuration, env.native());
     this.buildJsonGenerator = new BuildJsonGenerator();
   }
