@@ -10,19 +10,19 @@ class Serve extends Builder {
     .then(() => {
       var args = [
         'serve',
-        `--port=${this.options.port}`,      
+        `--port=${env.port()}`,      
         '--host=::1',
         '--disable-host-check',
-        `--live-reload=${this.options.liveReload}`,
-        `--proxy-config=proxies/${this.options.configuration}.conf.json`, 
-        `--configuration=${this.options.configuration}`,        
+        `--live-reload=${env.liveReload()}`,
+        `--proxy-config=proxies/${this.configuration}.conf.json`, 
+        `--configuration=${this.configuration}`,        
       ];
         
       if(env.project()) {
         args.push(`--project=${env.project()}`);
       }
       
-      if(this.options.secure) {
+      if(env.secure()) {
         args = [
           ...args,
           '--ssl',

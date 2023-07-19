@@ -40,6 +40,12 @@ module.exports = {
 	project: function() {
 		return this.arg('project');
 	},
+	liveReload: function() {
+		return this.arg('live-reload') ? this.arg('live-reload') : 'false';
+	},
+	secure: function() {
+		return this.arg('secure');
+	},
 	outputDir: function() {
 		return this.arg('outputDir', 'dist');
 	},
