@@ -26,7 +26,7 @@ class Build extends Builder {
         var cmd_ = `${isWin ? 'set ' : ''}NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng`;
         var args = [
           'build',
-          `--progress=false`,
+          `--progress=true`,
           `--outputPath=${env.outputDir()}`,
           `--output-hashing=all`,
           `--configuration=${this.configuration}`,
