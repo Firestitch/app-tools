@@ -1,61 +1,58 @@
-var fs = require('fs');
-var env = require('./env');
-var cmd = require('./cmd');
-var path = require('path');
-var { Builder } = require('./builder');
+const fs = require('fs');
+const env = require('./env');
+const cmd = require('./cmd');
+const path = require('path');
+const { Builder } = require('./builder');
+const { tap } = require('rxjs/operators');
 
 
 class Build extends Builder {
 
-  run() {
-    return new Promise((resolve, reject) => {
-      this.init()
-      .then(() => {
-        var dist = env.distDir();
+  build() {
+    this.generateEnv();
+    var dist = env.distDir();
 
-        try {
-          fs.rmSync(dist, { recursive: true, force: true });
-        } catch(e) {}
-        
-        if(env.preBuild()) {
-          const file = path.join(env.process().cwd(), env.preBuild());
-          require(file);
-        }        
+    try {
+      fs.rmSync(dist, { recursive: true, force: true });
+    } catch (e) { }
 
-        var isWin = env.process().platform === 'win32';
-        var cmd_ = `${isWin ? 'set ' : ''}NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng`;
-        var args = [
-          'build',
-          `--progress=true`,
-          `--outputPath=${env.outputDir()}`,
-          `--output-hashing=all`,
-          `--configuration=${this.configuration}`,
-        ];
-        
-        if(env.project()) {
-          args.push(`--project=${env.project()}`);
-        }
+    if (env.preBuild()) {
+      const file = path.join(env.process().cwd(), env.preBuild());
+      require(file);
+    }
 
-        if(env.native()) {
-          args = [
-            ...args,
-            `--optimization=false`,
-            `--sourceMap=true`
-          ];
-        }
+    var isWin = env.process().platform === 'win32';
+    var cmd_ = `${isWin ? 'set ' : ''}NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng`;
+    var args = [
+      'build',
+      `--progress=true`,
+      `--outputPath=${env.outputDir()}`,
+      `--output-hashing=all`,
+      `--configuration=${this.configuration}`,
+    ];
 
-        var process = cmd.exec(cmd_, args);
+    if (env.project()) {
+      args.push(`--project=${env.project()}`);
+    }
 
-        process.on('close', function (code) {
-          if(env.postBuild()) {
+    if (env.native()) {
+      args = [
+        ...args,
+        `--optimization=false`,
+        `--sourceMap=true`
+      ];
+    }
+
+  return cmd.exec(cmd_, args)
+      .pipe(
+        tap(() => {
+          if (env.postBuild()) {
+            this.generateBuildJson();
             const file = path.join(env.process().cwd(), env.postBuild());
             require(file);
           }
-
-          resolve();
-        });
-      });
-    });
+        }),
+      );
   }
 }
 

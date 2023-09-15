@@ -15,19 +15,13 @@ class Builder {
     this.envGenerator = new EnvGenerator(configuration, env.native());
     this.buildJsonGenerator = new BuildJsonGenerator();
   }
-
-  init() {
-    this.generateEnv();
-    this.generateBuildJson();
-    return Promise.resolve();
-  }
   
   generateEnv() {
     this.envGenerator.save();
   }
 
   generateBuildJson() {
-    this.buildJsonGenerator.save();
+    this.buildJsonGenerator.saveBuildJson();
   }
 }
 

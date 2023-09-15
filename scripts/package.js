@@ -4,4 +4,6 @@ var env = require('./libs/env');
 const { Package } = require('./libs/package');
 
 
-(new Package(env.configuration('production'))).run();
+(new Package(env.configuration('production')))
+  .package()
+  .subscribe();
