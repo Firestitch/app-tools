@@ -25,6 +25,18 @@ class BuildJsonGenerator {
   }
 
   promptVersion() {
+    const nextPatchVersion = this.version.replace(/(\d+)$/, (value, part) => { 
+      return Number(part) + 1 
+    });
+
+    const nextMinorVersion = this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major, minor) => { 
+      return `${major}.${Number(minor) + 1}.0`;
+    });
+
+    const nextMajorVersion = this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major) => { 
+      return `${Number(major) + 1}.0.0`;
+    });
+
     return from(
       prompts([
         {
@@ -32,8 +44,10 @@ class BuildJsonGenerator {
           name: 'version',
           message: 'Select a version',
           choices: [
-            { title: `Next version ${this.nextVersion}`, value: this.nextVersion },
-            { title: 'Current version', value: this.version },
+            { title: `Next patch version ${nextPatchVersion}`, value: nextPatchVersion },
+            { title: `Next minor version ${nextMinorVersion}`, value: nextMinorVersion },
+            { title: `Next major version ${nextMajorVersion}`, value: nextMajorVersion },
+            { title: `Current version ${this.version}`, value: this.version },
             { title: 'Custom version', value: 'custom' }
           ],
           initial: 0
