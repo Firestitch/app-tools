@@ -46,8 +46,8 @@ class Build extends Builder {
   return cmd.exec(cmd_, args)
       .pipe(
         tap(() => {
+          this.generateBuildJson();
           if (env.postBuild()) {
-            this.generateBuildJson();
             const file = path.join(env.process().cwd(), env.postBuild());
             require(file);
           }

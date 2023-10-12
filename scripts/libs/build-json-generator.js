@@ -74,10 +74,10 @@ class BuildJsonGenerator {
     fs.writeFileSync(env.packageJsonFile(), JSON.stringify(this.packageJson, null, 2).trim());
   }
 
-  saveBuildJson(version) {
+  saveBuildJson() {
     var data = JSON.stringify({
       name: this.name,
-      version: version,
+      version: this.version,
       date: new Date().toISOString(),
     });
 
