@@ -4,6 +4,10 @@ var path = require('path');
 
 
 module.exports = {
+
+	_src: null,
+	_project: null,
+
 	process: function() {
 		return process;
 	},
@@ -14,8 +18,13 @@ module.exports = {
     return path.join(this.frontendDir(), '..');
   },
   srcDir: function() {
-		const src = this.arg('src') ? this.arg('src') : 'src';
-    return path.join(this.frontendDir(), src);
+		if(this._src) {
+			return this._src;
+		}
+
+		const sourceRoot = this.angularJson().projects[this.project()].sourceRoot;
+
+		return path.join(this.frontendDir(), sourceRoot);
   },
   distDir: function() {
     return path.join(this.frontendDir(), this.outputDir());
@@ -25,6 +34,9 @@ module.exports = {
   },
   packageJson: function() {
     return require(this.packageJsonFile());
+  },
+  angularJson: function() {
+    return require(path.join(this.frontendDir(), 'angular.json'));
   },
   packageJsonFile: function() {
     return path.join(this.frontendDir(), 'package.json');
@@ -38,7 +50,15 @@ module.exports = {
 		return this.arg('port') || packageJson.config.port || default_;
 	},
 	project: function() {
-		return this.arg('project');
+		if(this.arg('project')) {
+			this._project = this.arg('project');
+		}
+
+		if(!this._project) {
+			this._project = Object.keys(this.angularJson().projects)[0];
+		}
+		
+		return this._project;
 	},
 	liveReload: function() {
 		return this.arg('live-reload') ? this.arg('live-reload') : 'false';
