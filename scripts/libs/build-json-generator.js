@@ -81,6 +81,7 @@ class BuildJsonGenerator {
       date: new Date().toISOString(),
     });
 
+    fs.mkdirSync(path.join(env.distDir(), 'assets'));
     fs.writeFileSync(path.join(env.distDir(), 'assets/build.json'), data);
 
     return this;
