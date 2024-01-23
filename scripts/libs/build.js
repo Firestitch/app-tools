@@ -27,7 +27,6 @@ class Build extends Builder {
       'build',
       `--progress=true`,
       `--output-path=${env.outputDir()}`,
-      `--output-hashing=all`,
       `--configuration=${this.configuration}`,
     ];
 
