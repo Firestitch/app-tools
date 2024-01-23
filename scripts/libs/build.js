@@ -26,6 +26,7 @@ class Build extends Builder {
     var args = [
       'build',
       `--progress=true`,
+      `--output-hashing=${env.outputHashing()}`,
       `--output-path=${env.outputDir()}`,
       `--configuration=${this.configuration}`,
     ];

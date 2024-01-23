@@ -69,6 +69,9 @@ module.exports = {
 	outputDir: function() {
 		return this.arg('outputDir', 'dist');
 	},
+	outputHashing: function() {
+		return this.arg('outputHashing', 'all');
+	},
 	native: function() {
 		return !!this.arg('native');
 	},
