@@ -10,7 +10,7 @@ class Serve extends Builder {
     var args = [
       'serve',
       `--port=${env.port()}`,
-      '--host=::1',
+      `--host=${env.host()}`,
       '--disable-host-check',
       `--live-reload=${env.liveReload()}`,
       `--proxy-config=proxies/${this.configuration}.conf.json`,
