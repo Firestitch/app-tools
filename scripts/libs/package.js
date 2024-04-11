@@ -19,6 +19,7 @@ class Package extends Build {
   package() {
     const project = env.project() ? `-${env.project()}` : '';
     const packageJson = env.packageJson();
+    const previousVersion = packageJson.version;
     this._zipName = `${packageJson.name}${project}`;
     this._zipFile = `${path.join(env.instanceDir(), this._zipName)}.zip`;
     this._zipTmpFile = `${this._zipFile}.tmp`;
@@ -30,8 +31,14 @@ class Package extends Build {
         switchMap(() => super.build()),
         switchMap(() => this.createZip()),
         switchMap(() => this.promptVersion()),
-        switchMap(({ version }) => this.saveVersion(version)),
-        switchMap(() => this.publish()),
+        switchMap(({ version }) => {
+          return this.saveVersion(version)
+            .pipe(
+              switchMap(() => previousVersion !== version ? 
+                this.publish()
+                : of(null)),
+            )
+        }),
       );
   }
 

@@ -18,6 +18,11 @@ class BuildJsonGenerator {
     this.packageJson = env.packageJson();
     this.version = this.packageJson.version;
     this.name = this.packageJson.name;
+
+    if(!this.version) {
+      throw Error('package.json version does not exist');
+    }
+
     this.nextVersion = this.version
       .replace(/(\d+$)/, (value, part) => {
         return Number(part) + 1
@@ -47,8 +52,8 @@ class BuildJsonGenerator {
             { title: `Next patch version ${nextPatchVersion}`, value: nextPatchVersion },
             { title: `Next minor version ${nextMinorVersion}`, value: nextMinorVersion },
             { title: `Next major version ${nextMajorVersion}`, value: nextMajorVersion },
+            { title: 'Custom version', value: 'custom' },
             { title: `Current version ${this.version}`, value: this.version },
-            { title: 'Custom version', value: 'custom' }
           ],
           initial: 0
         },
