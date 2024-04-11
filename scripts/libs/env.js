@@ -60,6 +60,9 @@ module.exports = {
 		
 		return this._project;
 	},
+	zipName: function() {
+		return this.arg('zipName') || '';
+	},
 	liveReload: function() {
 		return this.arg('live-reload') ? this.arg('live-reload') : 'false';
 	},

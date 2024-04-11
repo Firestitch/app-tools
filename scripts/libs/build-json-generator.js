@@ -49,11 +49,11 @@ class BuildJsonGenerator {
           name: 'version',
           message: 'Select a version',
           choices: [
+            { title: `Current version ${this.version}`, value: this.version },
             { title: `Next patch version ${nextPatchVersion}`, value: nextPatchVersion },
             { title: `Next minor version ${nextMinorVersion}`, value: nextMinorVersion },
             { title: `Next major version ${nextMajorVersion}`, value: nextMajorVersion },
             { title: 'Custom version', value: 'custom' },
-            { title: `Current version ${this.version}`, value: this.version },
           ],
           initial: 0
         },
