@@ -12,7 +12,7 @@ class Builder {
 
   constructor(configuration) { 
     this.configuration = configuration;
-    this.envGenerator = new EnvGenerator(configuration, env.native());
+    this.envGenerator = new EnvGenerator(configuration, env.platform());
     this.buildJsonGenerator = new BuildJsonGenerator();
   }
   

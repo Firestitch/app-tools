@@ -35,11 +35,11 @@ class Build extends Builder {
       args.push(`--project=${env.project()}`);
     }
 
-    if (env.native()) {
+    if (!env.platformWeb()) {
       args = [
         ...args,
         `--optimization=false`,
-        `--sourceMap=true`
+        `--source-map=true`
       ];
     }
 

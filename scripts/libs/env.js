@@ -75,8 +75,11 @@ module.exports = {
 	outputHashing: function() {
 		return this.arg('outputHashing', 'all');
 	},
-	native: function() {
-		return !!this.arg('native');
+	platform: function() {
+		return this.arg('platform', 'web');
+	},
+	platformWeb: function() {
+		return this.platform() === 'web';
 	},
 	postBuild: function() {
 		return this.arg('postBuild');
