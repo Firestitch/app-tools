@@ -20,7 +20,7 @@ class Package extends Build {
     const project = env.project() ? `-${env.project()}` : '';
     const packageJson = env.packageJson();
     const previousVersion = packageJson.version;
-    this._zipName = env.zipName() ? env.zipName() : `${packageJson.name}${project}`;
+    this._zipName = env.zipName() ? env.zipName() : `${packageJson.name}${project}-${this.configuration}`;
     this._zipFile = `${path.join(env.instanceDir(), this._zipName)}.zip`;
     this._zipTmpFile = `${this._zipFile}.tmp`;
     this.generateEnv();
