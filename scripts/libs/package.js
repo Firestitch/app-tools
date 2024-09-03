@@ -1,6 +1,6 @@
 const path = require('path');
 const { from, forkJoin, of, Observable } = require('rxjs');
-const { switchMap, tap, map } = require('rxjs/operators');
+const { switchMap, tap, map, mapTo } = require('rxjs/operators');
 const fs = require('fs');
 const env = require('./env');
 const cmd = require('./cmd');
@@ -15,6 +15,7 @@ class Package extends Build {
   _buildJsonGenerator = new BuildJsonGenerator();
   _zipFile = '';
   _zipName = '';
+  _zipTmpFile = '';
   _archive;
 
   package() {
@@ -43,14 +44,15 @@ class Package extends Build {
         switchMap(({ version }) => {
           return this.saveVersion(version)
             .pipe(
-              switchMap(() => previousVersion !== version ? 
-                this.publish()
-                : of(null)),
-            )
+              mapTo(version),
+            );
         }),
         tap(() => {
           this._archive.finalize();
-        })
+          fs.renameSync(this._zipTmpFile, this._zipFile);
+        }),
+        switchMap((version) => previousVersion !== version ? 
+          this.publish() : of(null)),
       );
   }
 
@@ -65,15 +67,10 @@ class Package extends Build {
     this._buildJsonGenerator.savePackageJson(version);
 
     const items = [
-      //'frontend/dist/assets/build.json'
+      'frontend/dist/assets/build.json'
     ];
 
-    return this.appendZip(items)
-    .pipe(
-      tap(() => {
-        fs.renameSync(this._zipTmpFile, this._zipFile);
-      }),
-    );
+    return this.appendZip(items);
   }
 
   publish() {
@@ -127,10 +124,10 @@ class Package extends Build {
   }
 
   appendZip(items) {
-    console.log(`\nZipping package...`);
+    console.log(`\nAppending zip package...\n`);
     items
       .forEach((item) => {
-        console.log(`Adding ${item}...`);
+        console.log(`Adding ${item}`);
         const file = path.join(env.instanceDir(), item);
         const stats = fs.statSync(file);
         const parts = item.split('/');
@@ -175,6 +172,7 @@ class Package extends Build {
   deleteZip() {
     try {
       fs.rmSync(this._zipFile, { force: true });
+      fs.rmSync(this._zipTmpFile, { force: true });
     } catch (e) { }
   }
 }
