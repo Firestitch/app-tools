@@ -38,7 +38,7 @@ class Package extends Build {
     return of(null)
       .pipe(
         tap(() => this.deleteZip()),
-        switchMap(() => super.build()),
+        switchMap(() => super.build(false)),
         switchMap(() => this.createZip()),
         switchMap(() => this.promptVersion()),
         switchMap(({ version }) => {
@@ -172,8 +172,13 @@ class Package extends Build {
   deleteZip() {
     try {
       fs.rmSync(this._zipFile, { force: true });
+    } catch (e) { 
+    }
+    
+    try {
       fs.rmSync(this._zipTmpFile, { force: true });
-    } catch (e) { }
+    } catch (e) {
+    }
   }
 }
 

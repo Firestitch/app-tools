@@ -8,7 +8,7 @@ const { tap } = require('rxjs/operators');
 
 class Build extends Builder {
 
-  build() {
+  build(generateBuildJson = true) {
     this.generateEnv();
     var dist = env.distDir();
 
@@ -46,7 +46,10 @@ class Build extends Builder {
   return cmd.exec(cmd_, args)
       .pipe(
         tap(() => {
-          this.generateBuildJson();
+          if(generateBuildJson) {
+            this.generateBuildJson();
+          }
+          
           if (env.postBuild()) {
             const file = path.join(env.process().cwd(), env.postBuild());
             require(file);
