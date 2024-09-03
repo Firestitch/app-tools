@@ -7,7 +7,7 @@ const cmd = require('./cmd');
 const { Build } = require('./build');
 const { BuildJsonGenerator } = require('./build-json-generator');
 const prompts = require('prompts');
-const Zip = require('adm-zip');
+const archiver = require('archiver');
 
 
 class Package extends Build {
@@ -15,15 +15,24 @@ class Package extends Build {
   _buildJsonGenerator = new BuildJsonGenerator();
   _zipFile = '';
   _zipName = '';
+  _archive;
 
   package() {
     const project = env.project() ? `-${env.project()}` : '';
     const packageJson = env.packageJson();
     const previousVersion = packageJson.version;
-    this._zipName = env.zipName() ? env.zipName() : `${packageJson.name}${project}-${this.configuration}`;
+    this._zipName = env.zipName() ? env.zipName() : `${packageJson.name}${project}`;
     this._zipFile = `${path.join(env.instanceDir(), this._zipName)}.zip`;
     this._zipTmpFile = `${this._zipFile}.tmp`;
     this.generateEnv();
+
+    const output = fs.createWriteStream(this._zipTmpFile);
+    this._archive = archiver('zip', {
+      zlib: { level: 9 } 
+    });
+
+    this._archive.pipe(output);
+
 
     return of(null)
       .pipe(
@@ -39,6 +48,9 @@ class Package extends Build {
                 : of(null)),
             )
         }),
+        tap(() => {
+          this._archive.finalize();
+        })
       );
   }
 
@@ -53,10 +65,10 @@ class Package extends Build {
     this._buildJsonGenerator.savePackageJson(version);
 
     const items = [
-      'frontend/dist/assets/build.json'
+      //'frontend/dist/assets/build.json'
     ];
 
-    return this.appendZip(items, true)
+    return this.appendZip(items)
     .pipe(
       tap(() => {
         fs.renameSync(this._zipTmpFile, this._zipFile);
@@ -114,32 +126,23 @@ class Package extends Build {
       );
   }
 
-  appendZip(items, append) {
+  appendZip(items) {
     console.log(`\nZipping package...`);
+    items
+      .forEach((item) => {
+        console.log(`Adding ${item}...`);
+        const file = path.join(env.instanceDir(), item);
+        const stats = fs.statSync(file);
+        const parts = item.split('/');
 
-    return new Observable((observer) => {
-      const file = append ? this._zipTmpFile : null;      
-      const zip = new Zip(file); 
+        if (stats.isDirectory()) {
+          this._archive.directory(file, parts.join('/'));
+        } else if (stats.isFile()) {
+          this._archive.file(file, { name: parts.join('/') });
+        }
+      });
 
-      items
-        .forEach((item) => {
-          const file = path.join(env.instanceDir(), item);
-          var stats = fs.statSync(file);
-
-          if (stats.isDirectory()) {
-            zip.addLocalFolder(file, item);
-          } else if (stats.isFile()) {
-            const parts = item.split('/');
-            const name = parts.pop();
-            zip.addLocalFile(file, parts.join('/'), name);
-          }
-        });
-
-      zip.writeZip(this._zipTmpFile);
-
-      observer.next();
-      observer.complete();
-    });
+    return of(null);
   }
 
   createZip() {
@@ -154,7 +157,7 @@ class Package extends Build {
 
     return of(null)
       .pipe(      
-        switchMap(() => this.appendZip(items, false)),
+        switchMap(() => this.appendZip(items)),
         tap(() => {
           console.log(`Created Package ${this._zipName}.zip`);
         }),
