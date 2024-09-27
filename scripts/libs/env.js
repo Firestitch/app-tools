@@ -49,6 +49,10 @@ module.exports = {
 		var packageJson = this.packageJson();
 		return this.arg('port') || packageJson.config.port || default_;
 	},
+	host: function(default_ = '::1') {
+		var packageJson = this.packageJson();
+		return this.arg('host') || packageJson.config.host || default_;
+	},
 	project: function() {
 		if(this.arg('project')) {
 			this._project = this.arg('project');
