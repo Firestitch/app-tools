@@ -1,0 +1,66 @@
+{
+  "php.validate.enable": false,
+  "php.suggest.basic": false,
+  "php.problems.scope": "all",
+  "php.problems.exclude": {
+    "backend/vendor/**": true,
+    "deploy/vendor/**": true,
+    "utility/assets/**": true,
+    "/": [6606]
+  },
+  "php.format.codeStyle": "K&R",
+  "php.format.rules.arrayInitializersNewLineAfterLastElement": true,
+  "php.format.rules.arrayInitializersNewLineBeforeFirstElement": true,
+  "php.format.rules.spaceAfterCast": false,
+  "php.format.rules.arrayInitializersWrap": "onEveryItem",
+  "php.format.rules.callParametersWrap": "onEveryItem",
+  "php.format.rules.addCommaAfterLastArrayElement": true,
+  "php.version": "8.3",
+  "php.inlayHints.parameters.enabled": false,
+  "php.stubs": [
+    "*",
+    "zip",
+    "zlib",
+    "com",
+    "pgsql"
+  ],
+  "[php]": {
+    "editor.defaultFormatter": "DEVSENSE.phptools-vscode",
+    "editor.formatOnSave": true,
+    "editor.wordSeparators": "-`~!@#%^&$*()=+[{]}\\|;:'\",.<>/?",
+  },
+  "files.exclude": {
+    "data/temp/**": true,
+    "node_modules/**/*.php": true
+  },
+  "search.exclude": {
+    "utility/assets/**": true,
+    "backend/vendor/**": true
+  },
+  "git.ignoreLimitWarning": true,
+  "angular.view-engine": false,
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never",
+    "source.organizeImports": "explicit",
+    "source.sortAndRemoveImports": "explicit"
+  },
+  "terminal.integrated.cwd": "${workspaceFolder}/frontend",
+  "eslint.workingDirectories": [
+    { "pattern": "frontend/apps/*/" },
+    "frontend/src"
+  ],
+  "barrelr.lineEnding": "LF",
+  "eslint.validate": [ "javascript", "html" ],
+  "workbench.colorTheme": "Default Dark Modern",
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.singleAttributePerLine": true,
+    "editor.formatOnSave": false,
+  },
+  "prettier.useEditorConfig": false,
+  "prettier.endOfLine": "lf",
+}
