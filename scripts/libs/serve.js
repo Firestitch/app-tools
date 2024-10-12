@@ -11,7 +11,6 @@ class Serve extends Builder {
       'serve',
       `--port=${env.port()}`,
       '--host=::1',
-      '--disable-host-check',
       `--live-reload=${env.liveReload()}`,
       `--proxy-config=proxies/${this.configuration}.conf.json`,
       `--configuration=${this.configuration}`,
