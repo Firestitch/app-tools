@@ -59,7 +59,7 @@
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "prettier.singleAttributePerLine": true,
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
   },
   "prettier.useEditorConfig": false,
   "prettier.endOfLine": "lf",
