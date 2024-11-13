@@ -30,6 +30,10 @@ class Build extends Builder {
       `--configuration=${this.configuration}`,
     ];
 
+    if (env.outputDir()) {
+      args.push(`--output-path=${env.outputDir()}`);
+    }
+
     if (env.project()) {
       args.push(`--project=${env.project()}`);
     }
