@@ -70,7 +70,7 @@ module.exports = {
 		return this.arg('secure');
 	},
 	outputDir: function() {
-		return this.arg('outputDir', 'dist');
+		return this.arg('outputDir', '');
 	},
 	outputHashing: function() {
 		return this.arg('outputHashing', 'all');
