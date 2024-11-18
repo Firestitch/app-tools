@@ -27,7 +27,11 @@ module.exports = {
 		return path.join(this.frontendDir(), sourceRoot);
   },
   distDir: function() {
-    return path.join(this.frontendDir(), this.outputDir());
+		const architect = this.angularJson().projects[this.project()].architect;
+		const base = architect.build.options.outputPath.base;
+		const dir = this.outputDir() || base;
+
+    return path.join(this.frontendDir(), dir);
   },
 	buildJsonFile: function() {
     return path.join(this.srcDir(), 'assets/build.json');
@@ -70,7 +74,7 @@ module.exports = {
 		return this.arg('secure');
 	},
 	outputDir: function() {
-		return this.arg('outputDir', 'dist');
+		return this.arg('outputDir');
 	},
 	outputHashing: function() {
 		return this.arg('outputHashing', 'all');
