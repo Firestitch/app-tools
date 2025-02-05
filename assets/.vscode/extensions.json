@@ -6,6 +6,7 @@
     "DEVSENSE.intelli-php-vscode",
     "ms-vscode.vscode-typescript-next",
     "DEVSENSE.phptools-vscode",
-    "mikerhyssmith.ts-barrelr"
+    "mikerhyssmith.ts-barrelr",
+    "esbenp.prettier-vscode"
   ]
 }
