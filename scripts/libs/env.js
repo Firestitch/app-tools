@@ -28,7 +28,8 @@ module.exports = {
   },
   distDir: function() {
 		const architect = this.angularJson().projects[this.project()].architect;
-		const base = architect.build.options.outputPath.base;
+		const outputPath = architect.build.options.outputPath;
+		const base = typeof outputPath === 'string' ? outputPath : outputPath.base;
 		const dir = this.outputDir() || base;
 
     return path.join(this.frontendDir(), dir);
