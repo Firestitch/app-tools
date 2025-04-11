@@ -6,7 +6,7 @@
     "backend/vendor/**": true,
     "deploy/vendor/**": true,
     "utility/assets/**": true,
-    "/": [6606]
+    "*": [6606]
   },
   "php.format.codeStyle": "K&R",
   "php.format.rules.arrayInitializersNewLineAfterLastElement": true,
