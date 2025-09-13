@@ -1,18 +1,32 @@
 const { Builder } = require('./builder');
 var cmd = require('./cmd');
 var env = require('./env');
+var fs = require('fs');
 
 
 class Serve extends Builder {
 
   serve() {
+
+    let proxyConfig;
+
+    if (fs.existsSync(`proxies/${this.configuration}.conf.js`)) {
+      proxyConfig = `proxies/${this.configuration}.conf.js`;
+    }
+
+    if (!proxyConfig) {
+      if (fs.existsSync(`proxies/${this.configuration}.conf.json`)) {
+        proxyConfig = `proxies/${this.configuration}.conf.json`;
+      }
+    }
+
     this.generateEnv();
     var args = [
       'serve',
       `--port=${env.port()}`,
       '--host=::1',
       `--live-reload=${env.liveReload()}`,
-      `--proxy-config=proxies/${this.configuration}.conf.json`,
+      `--proxy-config=${proxyConfig}`,
       `--configuration=${this.configuration}`,
     ];
 
