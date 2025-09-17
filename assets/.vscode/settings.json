@@ -63,4 +63,11 @@
   },
   "prettier.useEditorConfig": false,
   "prettier.endOfLine": "lf",
+  "terminal.integrated.env.osx": {
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "terminal.integrated.env.windows": {  
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "typescript.tsserver.maxTsServerMemory": 4096 
 }
