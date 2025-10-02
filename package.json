@@ -1,6 +1,6 @@
 {
   "name": "@firestitch/app-tools",
-  "version": "18.0.24",
+  "version": "18.0.25",
   "bin": {
     "serve": "./scripts/serve.js",
     "build": "./scripts/build.js",

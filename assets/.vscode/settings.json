@@ -38,7 +38,6 @@
     "backend/vendor/**": true
   },
   "git.ignoreLimitWarning": true,
-  "angular.view-engine": false,
   "[typescript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
@@ -54,7 +53,7 @@
     "frontend/src"
   ],
   "barrelr.lineEnding": "LF",
-  "eslint.validate": [ "javascript", "html" ],
+  "eslint.validate": [ "typescript", "javascript", "html" ],
   "workbench.colorTheme": "Default Dark Modern",
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
