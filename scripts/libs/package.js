@@ -267,7 +267,9 @@ class Package extends Build {
     items.forEach((item) => {
       const file = path.join(env.instanceDir(), item);
       const parts = item.split('/');
-      if (parts[parts.length - 1] === '.git') return;
+      const lastPart = parts[parts.length - 1];
+      // Skip items that start with . or are node_modules
+      if (lastPart.startsWith('.') || lastPart === 'node_modules') return;
       try {
         const stats = fs.statSync(file);
         if (stats.isDirectory()) {
@@ -284,10 +286,11 @@ class Package extends Build {
       console.log(`Adding ${item}...`);
       const file = path.join(env.instanceDir(), item);
       const parts = item.split('/');
+      const lastPart = parts[parts.length - 1];
       
-      // Skip .git directories entirely
-      if (parts[parts.length - 1] === '.git') {
-        console.log(`Skipping ${item} (.git directory)`);
+      // Skip items that start with . or are node_modules
+      if (lastPart.startsWith('.') || lastPart === 'node_modules') {
+        console.log(`Skipping ${item} (ignored)`);
         return;
       }
 
@@ -323,11 +326,8 @@ class Package extends Build {
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
       entries.forEach(entry => {
         const entryName = entry.name;
-        if (entryName === '.git' || entryName === 'node_modules' || 
-            entryName === '.cache' || entryName === 'cache' ||
-            entryName === 'logs' || entryName === 'tmp' || entryName === 'temp' ||
-            entryName === '.tmp' || entryName === 'backups' ||
-            entryName === '.idea' || entryName === '.vscode') {
+        // Skip files and folders that start with . and node_modules
+        if (entryName.startsWith('.') || entryName === 'node_modules') {
           return;
         }
         const fullPath = path.join(dirPath, entryName);
@@ -364,27 +364,13 @@ class Package extends Build {
       entries.forEach(entry => {
         const entryName = entry.name;
         
-        // Skip common directories that slow down zipping
-        if (entryName === '.git' || 
-            entryName === 'node_modules' || 
-            entryName === '.cache' ||
-            entryName === 'cache' ||
-            entryName === 'logs' ||
-            entryName === 'tmp' ||
-            entryName === 'temp' ||
-            entryName === '.tmp' ||
-            entryName === 'backups' ||
-            entryName === '.idea' ||
-            entryName === '.vscode' ||
-            entryName === 'dist' && zipPrefix && zipPrefix.includes('backend')) {
+        // Skip files and folders that start with . and node_modules
+        if (entryName.startsWith('.') || entryName === 'node_modules') {
           return;
         }
         
-        // Skip git-related files
-        if (entryName === '.gitignore' || 
-            entryName === '.gitattributes' ||
-            entryName === '.DS_Store' ||
-            entryName === 'Thumbs.db') {
+        // Special case: skip backend/dist directory
+        if (entryName === 'dist' && zipPrefix && zipPrefix.includes('backend')) {
           return;
         }
         
