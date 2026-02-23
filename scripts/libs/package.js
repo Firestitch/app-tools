@@ -7,28 +7,7 @@ const cmd = require('./cmd');
 const { Build } = require('./build');
 const { BuildJsonGenerator } = require('./build-json-generator');
 const prompts = require('prompts');
-let yazl;
-try {
-  yazl = require('yazl');
-} catch (e) {
-  // Fallback: try to resolve from parent node_modules
-  const possiblePaths = [
-    path.join(__dirname, '../../../../yazl'),
-    path.join(__dirname, '../../../../../yazl'),
-    path.join(__dirname, '../../../../../../yazl'),
-  ];
-  
-  for (const yazlPath of possiblePaths) {
-    if (fs.existsSync(yazlPath)) {
-      yazl = require(yazlPath);
-      break;
-    }
-  }
-  
-  if (!yazl) {
-    throw new Error('yazl module not found. Please install it in the frontend directory: npm install yazl --save-dev');
-  }
-}
+const yazl = require('yazl');
 
 
 class Package extends Build {

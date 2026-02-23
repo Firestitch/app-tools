@@ -20,11 +20,13 @@ class Serve extends Builder {
       }
     }
 
+    const host = this.extractHostFromProxy(proxyConfig) || '::1';
+
     this.generateEnv();
     var args = [
       'serve',
       `--port=${env.port()}`,
-      '--host=::1',
+      `--host=${host}`,
       `--live-reload=${env.liveReload()}`,
       `--proxy-config=${proxyConfig}`,
       `--configuration=${this.configuration}`,
@@ -44,6 +46,31 @@ class Serve extends Builder {
     }
 
     return cmd.exec('ng', args);
+  }
+
+  extractHostFromProxy(proxyConfig) {
+    if (!proxyConfig) {
+      return null;
+    }
+
+    try {
+      if (proxyConfig.endsWith('.json')) {
+        const config = JSON.parse(fs.readFileSync(proxyConfig, 'utf-8'));
+        const apiTarget = config['/api/'] && config['/api/'].target;
+        if (apiTarget) {
+          return new URL(apiTarget).hostname;
+        }
+      } else if (proxyConfig.endsWith('.js')) {
+        const config = require(require('path').resolve(proxyConfig));
+        const entries = Array.isArray(config) ? config : [];
+        const apiEntry = entries.find(e => e.context && e.context.includes('/api/'));
+        if (apiEntry && apiEntry.target) {
+          return new URL(apiEntry.target).hostname;
+        }
+      }
+    } catch (e) {}
+
+    return null;
   }
 }
 
