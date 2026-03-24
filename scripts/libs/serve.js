@@ -2,6 +2,7 @@ const { Builder } = require('./builder');
 var cmd = require('./cmd');
 var env = require('./env');
 var fs = require('fs');
+var path = require('path');
 
 
 class Serve extends Builder {
@@ -9,6 +10,10 @@ class Serve extends Builder {
   serve() {
 
     let proxyConfig;
+
+    if(env.proxyConfig()) {
+      proxyConfig = this.proxyConfig();
+    }
 
     if (fs.existsSync(`proxies/${this.configuration}.conf.js`)) {
       proxyConfig = `proxies/${this.configuration}.conf.js`;
@@ -20,7 +25,7 @@ class Serve extends Builder {
       }
     }
 
-    const host = this.extractHostFromProxy(proxyConfig) || '::1';
+    const host = this.extractHostFromProxy() || '::1';
 
     this.generateEnv();
     var args = [
@@ -48,26 +53,19 @@ class Serve extends Builder {
     return cmd.exec('ng', args);
   }
 
-  extractHostFromProxy(proxyConfig) {
-    if (!proxyConfig) {
-      return null;
-    }
-
+  extractHostFromProxy() {
     try {
-      if (proxyConfig.endsWith('.json')) {
-        const config = JSON.parse(fs.readFileSync(proxyConfig, 'utf-8'));
-        const apiTarget = config['/api/'] && config['/api/'].target;
-        if (apiTarget) {
-          return new URL(apiTarget).hostname;
-        }
-      } else if (proxyConfig.endsWith('.js')) {
-        const config = require(require('path').resolve(proxyConfig));
-        const entries = Array.isArray(config) ? config : [];
-        const apiEntry = entries.find(e => e.context && e.context.includes('/api/'));
-        if (apiEntry && apiEntry.target) {
-          return new URL(apiEntry.target).hostname;
-        }
+      const pkgPath = path.join(process.cwd(), 'package.json');
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      let name = pkg.name;
+      if (typeof name !== 'string' || !name) {
+        return null;
       }
+      if (name.startsWith('@')) {
+        const parts = name.split('/');
+        name = parts.length > 1 ? parts.slice(1).join('-') : name.replace(/^@/, '');
+      }
+      return `${name}.local.firestitch.com`;
     } catch (e) {}
 
     return null;

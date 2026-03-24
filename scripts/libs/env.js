@@ -68,6 +68,9 @@ module.exports = {
 	zipName: function() {
 		return this.arg('zipName') || '';
 	},
+	proxyConfig: function() {
+		return this.arg('proxyConfig');
+	},
 	liveReload: function() {
 		return this.arg('live-reload') ? this.arg('live-reload') : 'false';
 	},
