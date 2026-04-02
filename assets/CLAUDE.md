@@ -22,11 +22,36 @@ Do NOT skip this process. Do NOT assume you know the standards without reading t
   - PHP API views, params, GET/POST → `standards/php/api.md`
 - If you genuinely believe **no** standard applies (e.g., pure typo in a user-visible string), say that in one sentence and proceed—do not use that to skip standards on real feature or bugfix work.
 
-### For the human (how to enforce this in Cursor)
+### For the team (how to enforce this across tools)
 
-- Keep this file **and** `CLAUDE.md` in sync, or delete one source of truth—duplicate rules help nothing if they drift.
-- Add the same "Critical / read full .md files" block to **Cursor Settings → Rules for AI** (user rules) if you want it on **every** project, not only this repo.
-- There is no CI hook that proves an LLM "read" a file; clarity in rules + user rules is the practical lever.
+This file (`CLAUDE.md`) is the **single source of truth** for project-level AI instructions. Depending on which tool you use, it may be loaded automatically or require additional setup:
+
+- **Claude Code (CLI, VS Code extension, Desktop app):** `CLAUDE.md` is loaded automatically — no extra configuration needed.
+- **Cursor:** Project rules live in `.cursorrules` or `.cursor/rules/`. These must be kept in sync with `CLAUDE.md` manually. If they drift, one tool will follow different rules than the other.
+
+**To keep rules consistent across tools:**
+
+1. Treat `CLAUDE.md` as the primary source. Write and update rules here first.
+2. Copy or mirror the relevant rules into `.cursorrules` (or whichever file your tool requires). Do not maintain independent rules in tool-specific files.
+3. If your tool has user-level settings (e.g., Cursor Settings > Rules for AI, or `~/.claude/CLAUDE.md`), use those only for personal preferences — not for project rules that the whole team should follow.
+
+**What each layer does:**
+
+| Layer | Scope | Where it lives | Who sees it |
+|-------|-------|----------------|-------------|
+| Project rules | This repo | `CLAUDE.md` (+ `.cursorrules` for Cursor) | Everyone on the team |
+| User rules | All repos for one person | Tool-specific (see below) | Only that user |
+| Memory | Conversation history for one person | `~/.claude/projects/*/memory/` (Claude Code only) | Only that user's Claude Code sessions |
+
+**Enforcing rules across all your projects (not just this repo):**
+
+If you want the "read full `.md` files before editing code" rule enforced on **every** project you work on, add it to your **user-level** settings:
+- **Claude Code:** `~/.claude/CLAUDE.md`
+- **Cursor:** Cursor Settings > Rules for AI
+
+This way the rule follows you regardless of whether a specific repo's `CLAUDE.md` or `.cursorrules` includes it.
+
+**There is no automated sync between tools.** If someone updates `CLAUDE.md`, Cursor users won't see the change until `.cursorrules` is also updated. Consider keeping `.cursorrules` minimal with a note pointing to `CLAUDE.md` as the canonical version.
 
 ## Understanding the Codebase (Database, Schema, Relationships)
 
