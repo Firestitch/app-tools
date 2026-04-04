@@ -43,12 +43,6 @@ try {
       console.log('App-tool copy ' + src + ' to ' + dest);
       copyAssetEntry(src, dest);
     }
-    var claudeSrc = path.join(assetsDir, 'CLAUDE.md');
-    var cursorRulesDest = path.join(instanceDir, '.cursorrules');
-    if (fs.existsSync(claudeSrc)) {
-      console.log('App-tool copy ' + claudeSrc + ' to ' + cursorRulesDest);
-      fs.copyFileSync(claudeSrc, cursorRulesDest);
-    }
   }
 } catch(e) {
   console.log('App-tool postinstall', e);
