@@ -2,6 +2,7 @@ const path = require('path');
 const { from, forkJoin, of, Observable } = require('rxjs');
 const { switchMap, tap, map, mapTo } = require('rxjs/operators');
 const fs = require('fs');
+const { execSync, spawn } = require('child_process');
 const env = require('./env');
 const cmd = require('./cmd');
 const { Build } = require('./build');
@@ -22,6 +23,7 @@ class Package extends Build {
   _lastProgressUpdate = null;
   _totalFilesToAdd = 0;
   _currentFileBeingAdded = '';
+  _nativeZipTool = null;
 
   package() {
     const project = env.project() ? `-${env.project()}` : '';
@@ -32,10 +34,7 @@ class Package extends Build {
     this._zipTmpFile = `${this._zipFile}.tmp`;
     this.generateEnv();
 
-    const output = fs.createWriteStream(this._zipTmpFile);
-    this._archive = new yazl.ZipFile();
-    this._archive.outputStream.pipe(output);
-
+    this._nativeZipTool = this._detectNativeZip();
 
     return of(null)
       .pipe(
@@ -50,119 +49,347 @@ class Package extends Build {
             );
         }),
         switchMap((version) => {
+          if (this._nativeZipTool) {
+            // Native zip already wrote the file — just rename
+            console.log(`\nFinalizing zip package...`);
+            try {
+              if (fs.existsSync(this._zipTmpFile)) {
+                fs.renameSync(this._zipTmpFile, this._zipFile);
+              }
+              const finalStats = fs.statSync(this._zipFile);
+              const finalSize = (finalStats.size / 1024 / 1024).toFixed(2);
+              console.log(`✓ Package created successfully: ${this._zipName}.zip (${finalSize} MB)`);
+            } catch (err) {
+              console.error(`✗ Error finalizing: ${err.message}`);
+              throw err;
+            }
+            return of(version);
+          }
+
+          // yazl fallback — finalize the archive
           console.log(`\nFinalizing zip package...`);
           console.log(`Files added to archive: ${this._processedFiles}`);
           console.log(`Starting compression and writing to disk...\n`);
-          
-          const finalizeStartTime = Date.now();
-          let lastSize = 0;
-          let lastUpdate = Date.now();
-          let updateInterval;
-          
-          // Monitor file size growth with more detail
-          let lastStableSize = 0;
-          let stableCount = 0;
-          const checkFileSize = () => {
-            try {
-              if (fs.existsSync(this._zipTmpFile)) {
-                const stats = fs.statSync(this._zipTmpFile);
-                const currentSize = stats.size;
-                const sizeMB = (currentSize / 1024 / 1024).toFixed(2);
-                const elapsed = ((Date.now() - finalizeStartTime) / 1000).toFixed(1);
-                
-                if (currentSize > lastSize) {
-                  const bytesPerSec = (currentSize - lastSize) / ((Date.now() - lastUpdate) / 1000);
-                  const rateMB = (bytesPerSec / 1024 / 1024) * 60;
-                  const percentComplete = lastSize > 0 ? ((currentSize / (lastSize * 1.1)) * 100).toFixed(1) : '0';
-                  
-                  // Estimate progress based on file count vs size
-                  const estimatedProgress = Math.min(95, (currentSize / 100000000) * 100).toFixed(1); // Rough estimate
-                  
-                  process.stdout.write(`\rWriting: ${sizeMB} MB (~${estimatedProgress}%) | Elapsed: ${elapsed}s | Rate: ${rateMB.toFixed(1)} MB/min    `);
-                  lastSize = currentSize;
-                  lastUpdate = Date.now();
-                  stableCount = 0;
-                } else {
-                  stableCount++;
-                  if (stableCount > 2) {
-                    // Size hasn't changed - likely writing central directory (slow part)
-                    process.stdout.write(`\rWriting: ${sizeMB} MB | Elapsed: ${elapsed}s | Writing central directory (this can take a while with many files)...    `);
-                  } else {
-                    process.stdout.write(`\rWriting: ${sizeMB} MB | Elapsed: ${elapsed}s | Compressing...    `);
-                  }
-                }
-                
-                // Detect if we're stuck (size hasn't changed for a while)
-                if (currentSize === lastStableSize) {
-                  stableCount++;
-                } else {
-                  lastStableSize = currentSize;
-                  stableCount = 0;
-                }
-              }
-            } catch (e) {
-              // File might not exist yet or be locked
-            }
-          };
-          
-          return new Promise((resolve, reject) => {
-            // Start monitoring file size
-            updateInterval = setInterval(checkFileSize, 500);
-            
-            output.on('close', () => {
-              clearInterval(updateInterval);
-              const totalElapsed = ((Date.now() - finalizeStartTime) / 1000).toFixed(1);
-              
-              // Get final file size
-              let finalSizeMB = '0';
-              try {
-                if (fs.existsSync(this._zipTmpFile)) {
-                  const stats = fs.statSync(this._zipTmpFile);
-                  finalSizeMB = (stats.size / 1024 / 1024).toFixed(2);
-                }
-              } catch (e) {}
-              
-              console.log(`\n✓ Compression complete: ${finalSizeMB} MB written in ${totalElapsed}s`);
-              console.log(`Renaming ${this._zipTmpFile} to ${this._zipFile}...`);
-              
-              try {
-                fs.renameSync(this._zipTmpFile, this._zipFile);
-                const finalStats = fs.statSync(this._zipFile);
-                const finalSize = (finalStats.size / 1024 / 1024).toFixed(2);
-                console.log(`✓ Package created successfully: ${this._zipName}.zip (${finalSize} MB)`);
-                resolve(version);
-              } catch (renameErr) {
-                console.error(`\n✗ Error renaming file: ${renameErr.message}`);
-                reject(renameErr);
-              }
-            });
-            
-            output.on('error', (err) => {
-              clearInterval(updateInterval);
-              console.error(`\n✗ Error writing zip file: ${err.message}`);
-              reject(err);
-            });
-            
-            this._archive.outputStream.on('error', (err) => {
-              clearInterval(updateInterval);
-              console.error(`\n✗ Error in archive stream: ${err.message}`);
-              reject(err);
-            });
-            
-            this._archive.on('error', (err) => {
-              clearInterval(updateInterval);
-              console.error(`\n✗ Error in archive: ${err.message}`);
-              reject(err);
-            });
-            
-            console.log(`Calling archive.end() to start finalization...`);
-            this._archive.end();
-            console.log(`Archive.end() called. Stream is processing and writing data...`);
-          });
+
+          return this._finalizeYazlArchive(version);
         }),
-        switchMap((version) => previousVersion !== version ? 
+        switchMap((version) => previousVersion !== version ?
           this.publish() : of(null)),
       );
+  }
+
+  _findExecutable(name) {
+    // First check PATH
+    try {
+      const check = process.platform === 'win32' ? `where ${name}` : `which ${name}`;
+      const result = execSync(check, { stdio: ['ignore', 'pipe', 'ignore'], encoding: 'utf8' });
+      const found = result.trim().split(/\r?\n/)[0];
+      if (found) return found;
+    } catch (e) {}
+
+    // On Windows, also search standard install directories via the registry / Program Files
+    if (process.platform === 'win32') {
+      const programDirs = [process.env['ProgramFiles'], process.env['ProgramFiles(x86)'], process.env['ProgramW6432']].filter(Boolean);
+      for (const dir of programDirs) {
+        const candidate = path.join(dir, '7-Zip', '7z.exe');
+        if (name === '7z' && fs.existsSync(candidate)) {
+          return candidate;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  _detectNativeZip() {
+    // Try 7z first (fastest, multithreaded) — works on both Windows and Linux
+    const sevenZip = this._findExecutable('7z');
+    if (sevenZip) {
+      console.log(`Using native zip: 7z (${sevenZip})`);
+      return { type: '7z', path: sevenZip };
+    }
+
+    // Try zip (standard on Linux, sometimes available on Windows via Git Bash etc.)
+    const zip = this._findExecutable('zip');
+    if (zip) {
+      console.log(`Using native zip: zip (${zip})`);
+      return { type: 'zip', path: zip };
+    }
+
+    console.log(`No native zip tool found, using yazl (slower)`);
+    return null;
+  }
+
+  _nativeCreateZip(items) {
+    const instanceDir = env.instanceDir();
+    const startTime = Date.now();
+
+    // Resolve which items actually exist
+    const existingItems = items.filter((item) => {
+      const fullPath = path.join(instanceDir, item);
+      const parts = item.split('/');
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.startsWith('.') || lastPart === 'node_modules') return false;
+      return fs.existsSync(fullPath);
+    });
+
+    if (existingItems.length === 0) {
+      console.log(`No items to zip.`);
+      return of(null);
+    }
+
+    console.log(`\nZipping ${existingItems.length} directories/files with ${this._nativeZipTool.type}...`);
+
+    if (this._nativeZipTool.type === '7z') {
+      return this._zipWith7z(existingItems, instanceDir, this._zipTmpFile, startTime);
+    }
+
+    if (this._nativeZipTool.type === 'zip') {
+      return this._zipWithZip(existingItems, instanceDir, this._zipTmpFile, startTime);
+    }
+
+    return of(null);
+  }
+
+  _zipWith7z(items, cwd, outputFile, startTime) {
+    return new Observable((observer) => {
+      // Build exclusion list
+      const excludes = [
+        '-xr!node_modules',
+        '-xr!.*',
+        '-x!backend/dist',
+      ];
+
+      // 7z a -tzip output.zip items... -xr!excludes
+      const args = [
+        'a',
+        '-tzip',
+        '-mx=1',    // compression level 1 (fast)
+        '-mmt=on',  // multithreaded
+        outputFile,
+        ...items,
+        ...excludes,
+      ];
+
+      console.log(`Running: 7z a -tzip -mx=1 -mmt=on ${path.basename(outputFile)} ${items.join(' ')}`);
+
+      const proc = spawn(this._nativeZipTool.path, args, {
+        cwd: cwd,
+        stdio: 'inherit',
+        shell: false,
+      });
+
+      proc.on('close', (code) => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        if (code !== 0) {
+          console.error(`✗ 7-Zip exited with code ${code} after ${elapsed}s`);
+          observer.error(new Error(`7-Zip failed with exit code ${code}`));
+          return;
+        }
+
+        try {
+          const stats = fs.statSync(outputFile);
+          const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
+          console.log(`✓ Zip created: ${sizeMB} MB in ${elapsed}s`);
+        } catch (e) {}
+
+        observer.next(null);
+        observer.complete();
+      });
+
+      proc.on('error', (err) => {
+        console.error(`✗ Failed to run 7-Zip: ${err.message}`);
+        observer.error(err);
+      });
+    });
+  }
+
+  _zipWithZip(items, cwd, outputFile, startTime) {
+    return new Observable((observer) => {
+      // zip -r -1 output.zip items... -x "*/node_modules/*" -x "*/.*" -x "backend/dist/*"
+      const args = [
+        '-r',
+        '-1',       // compression level 1 (fast)
+        outputFile,
+        ...items,
+        '-x', '*/node_modules/*',
+        '-x', '*/.*',
+        '-x', 'backend/dist/*',
+      ];
+
+      console.log(`Running: zip -r -1 ${path.basename(outputFile)} ${items.join(' ')}`);
+
+      const proc = spawn(this._nativeZipTool.path, args, {
+        cwd: cwd,
+        stdio: 'inherit',
+        shell: false,
+      });
+
+      proc.on('close', (code) => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        if (code !== 0) {
+          console.error(`✗ zip exited with code ${code} after ${elapsed}s`);
+          observer.error(new Error(`zip failed with exit code ${code}`));
+          return;
+        }
+
+        try {
+          const stats = fs.statSync(outputFile);
+          const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
+          console.log(`✓ Zip created: ${sizeMB} MB in ${elapsed}s`);
+        } catch (e) {}
+
+        observer.next(null);
+        observer.complete();
+      });
+
+      proc.on('error', (err) => {
+        console.error(`✗ Failed to run zip: ${err.message}`);
+        observer.error(err);
+      });
+    });
+  }
+
+  _nativeAppendZip(items) {
+    const instanceDir = env.instanceDir();
+    const zipFile = fs.existsSync(this._zipTmpFile) ? this._zipTmpFile : this._zipFile;
+
+    const existingItems = items.filter((item) => {
+      const fullPath = path.join(instanceDir, item);
+      return fs.existsSync(fullPath);
+    });
+
+    if (existingItems.length === 0) {
+      return of(null);
+    }
+
+    if (this._nativeZipTool.type === '7z') {
+      return new Observable((observer) => {
+        const args = [
+          'a',
+          '-tzip',
+          '-mx=1',
+          zipFile,
+          ...existingItems,
+        ];
+
+        const proc = spawn(this._nativeZipTool.path, args, {
+          cwd: instanceDir,
+          stdio: 'inherit',
+          shell: false,
+        });
+
+        proc.on('close', (code) => {
+          if (code !== 0) {
+            observer.error(new Error(`7-Zip append failed with exit code ${code}`));
+            return;
+          }
+          console.log(`✓ Appended ${existingItems.join(', ')} to zip`);
+          observer.next(null);
+          observer.complete();
+        });
+
+        proc.on('error', (err) => {
+          observer.error(err);
+        });
+      });
+    }
+
+    // zip (Linux) — zip appends/updates by default when the archive exists
+    if (this._nativeZipTool.type === 'zip') {
+      return new Observable((observer) => {
+        const args = [
+          '-r',
+          '-1',
+          zipFile,
+          ...existingItems,
+        ];
+
+        const proc = spawn(this._nativeZipTool.path, args, {
+          cwd: instanceDir,
+          stdio: 'inherit',
+          shell: false,
+        });
+
+        proc.on('close', (code) => {
+          if (code !== 0) {
+            observer.error(new Error(`zip append failed with exit code ${code}`));
+            return;
+          }
+          console.log(`✓ Appended ${existingItems.join(', ')} to zip`);
+          observer.next(null);
+          observer.complete();
+        });
+
+        proc.on('error', (err) => {
+          observer.error(err);
+        });
+      });
+    }
+
+    return of(null);
+  }
+
+  _finalizeYazlArchive(version) {
+    const finalizeStartTime = Date.now();
+    let lastSize = 0;
+    let lastUpdate = Date.now();
+    let updateInterval;
+    let stableCount = 0;
+
+    const checkFileSize = () => {
+      try {
+        if (fs.existsSync(this._zipTmpFile)) {
+          const stats = fs.statSync(this._zipTmpFile);
+          const currentSize = stats.size;
+          const sizeMB = (currentSize / 1024 / 1024).toFixed(2);
+          const elapsed = ((Date.now() - finalizeStartTime) / 1000).toFixed(1);
+
+          if (currentSize > lastSize) {
+            process.stdout.write(`\rWriting: ${sizeMB} MB | Elapsed: ${elapsed}s | Compressing...    `);
+            lastSize = currentSize;
+            lastUpdate = Date.now();
+            stableCount = 0;
+          } else {
+            stableCount++;
+            if (stableCount > 4) {
+              process.stdout.write(`\rWriting: ${sizeMB} MB | Elapsed: ${elapsed}s | Writing central directory...    `);
+            }
+          }
+        }
+      } catch (e) {}
+    };
+
+    return new Promise((resolve, reject) => {
+      updateInterval = setInterval(checkFileSize, 1000);
+
+      this._yazlOutput.on('close', () => {
+        clearInterval(updateInterval);
+        const totalElapsed = ((Date.now() - finalizeStartTime) / 1000).toFixed(1);
+
+        try {
+          if (fs.existsSync(this._zipTmpFile)) {
+            const stats = fs.statSync(this._zipTmpFile);
+            console.log(`\n✓ Compression complete: ${(stats.size / 1024 / 1024).toFixed(2)} MB written in ${totalElapsed}s`);
+          }
+
+          fs.renameSync(this._zipTmpFile, this._zipFile);
+          const finalStats = fs.statSync(this._zipFile);
+          console.log(`✓ Package created successfully: ${this._zipName}.zip (${(finalStats.size / 1024 / 1024).toFixed(2)} MB)`);
+          resolve(version);
+        } catch (err) {
+          console.error(`✗ Error finalizing: ${err.message}`);
+          reject(err);
+        }
+      });
+
+      this._yazlOutput.on('error', (err) => {
+        clearInterval(updateInterval);
+        reject(err);
+      });
+
+      this._archive.end();
+    });
   }
 
   promptVersion() {
@@ -233,21 +460,24 @@ class Package extends Build {
   }
 
   appendZip(items) {
+    // Use native tool if available
+    if (this._nativeZipTool) {
+      return this._nativeAppendZip(items);
+    }
+
+    // yazl fallback
     console.log(`\nAppending zip package...\n`);
-    
-    // Start progress tracking
+
     this._processedFiles = 0;
     this._startTime = Date.now();
     this._lastProgressUpdate = Date.now();
     this._totalFilesToAdd = 0;
-    
-    // Quick count first (just for display, won't slow down much)
+
     console.log(`Counting files to add...`);
     items.forEach((item) => {
       const file = path.join(env.instanceDir(), item);
       const parts = item.split('/');
       const lastPart = parts[parts.length - 1];
-      // Skip items that start with . or are node_modules
       if (lastPart.startsWith('.') || lastPart === 'node_modules') return;
       try {
         const stats = fs.statSync(file);
@@ -259,15 +489,13 @@ class Package extends Build {
       } catch (e) {}
     });
     console.log(`Found ${this._totalFilesToAdd} files to add\n`);
-    
-    // Now add files
+
     items.forEach((item) => {
       console.log(`Adding ${item}...`);
       const file = path.join(env.instanceDir(), item);
       const parts = item.split('/');
       const lastPart = parts[parts.length - 1];
-      
-      // Skip items that start with . or are node_modules
+
       if (lastPart.startsWith('.') || lastPart === 'node_modules') {
         console.log(`Skipping ${item} (ignored)`);
         return;
@@ -275,13 +503,12 @@ class Package extends Build {
 
       try {
         const stats = fs.statSync(file);
-        
+
         if (stats.isDirectory()) {
-          // Recursively add directory files, excluding common slow directories
           this._addDirectoryRecursive(file, parts.join('/'));
         } else if (stats.isFile()) {
           this._currentFileBeingAdded = item;
-          this._archive.addFile(file, parts.join('/'));
+          this._archive.addFile(file, parts.join('/'), { compressionLevel: 1 });
           this._updateProgress();
         }
       } catch (e) {
@@ -289,7 +516,6 @@ class Package extends Build {
       }
     });
 
-    // Show final summary
     if (this._processedFiles > 0) {
       const totalElapsed = ((Date.now() - this._startTime) / 1000).toFixed(1);
       const avgRate = (this._processedFiles / (totalElapsed / 60)).toFixed(0);
@@ -305,7 +531,6 @@ class Package extends Build {
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
       entries.forEach(entry => {
         const entryName = entry.name;
-        // Skip files and folders that start with . and node_modules
         if (entryName.startsWith('.') || entryName === 'node_modules') {
           return;
         }
@@ -322,15 +547,14 @@ class Package extends Build {
 
   _updateProgress() {
     this._processedFiles++;
-    
-    // Update progress every 10 files or every 500ms to avoid console spam
+
     const now = Date.now();
     if (this._processedFiles % 10 === 0 || (now - this._lastProgressUpdate) > 500) {
       const elapsed = ((now - this._startTime) / 1000).toFixed(1);
-      const rate = this._processedFiles / (elapsed / 60); // files per minute
+      const rate = this._processedFiles / (elapsed / 60);
       const remaining = this._totalFilesToAdd - this._processedFiles;
       const percent = this._totalFilesToAdd > 0 ? ((this._processedFiles / this._totalFilesToAdd) * 100).toFixed(1) : '0';
-      
+
       process.stdout.write(`\rProgress: ${percent}% (${this._processedFiles}/${this._totalFilesToAdd} files, ${remaining} remaining) | Elapsed: ${elapsed}s | Rate: ${rate.toFixed(0)} files/min    `);
       this._lastProgressUpdate = now;
     }
@@ -339,27 +563,25 @@ class Package extends Build {
   _addDirectoryRecursive(dirPath, zipPrefix) {
     try {
       const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-      
+
       entries.forEach(entry => {
         const entryName = entry.name;
-        
-        // Skip files and folders that start with . and node_modules
+
         if (entryName.startsWith('.') || entryName === 'node_modules') {
           return;
         }
-        
-        // Special case: skip backend/dist directory
+
         if (entryName === 'dist' && zipPrefix && zipPrefix.includes('backend')) {
           return;
         }
-        
+
         const fullPath = path.join(dirPath, entryName);
         const zipPath = zipPrefix ? `${zipPrefix}/${entryName}` : entryName;
-        
+
         if (entry.isDirectory()) {
           this._addDirectoryRecursive(fullPath, zipPath);
         } else if (entry.isFile()) {
-          this._archive.addFile(fullPath, zipPath);
+          this._archive.addFile(fullPath, zipPath, { compressionLevel: 1 });
           this._updateProgress();
         }
       });
@@ -378,8 +600,24 @@ class Package extends Build {
       ...includes,
     ];
 
+    // For native zip, go straight to native tool
+    if (this._nativeZipTool) {
+      return this._nativeCreateZip(items)
+        .pipe(
+          tap(() => {
+            console.log(`Created Package ${this._zipName}.zip`);
+          }),
+        );
+    }
+
+    // yazl fallback — set up the archive streams
+    const output = fs.createWriteStream(this._zipTmpFile);
+    this._archive = new yazl.ZipFile();
+    this._archive.outputStream.pipe(output);
+    this._yazlOutput = output;
+
     return of(null)
-      .pipe(      
+      .pipe(
         switchMap(() => this.appendZip(items)),
         tap(() => {
           console.log(`Created Package ${this._zipName}.zip`);
@@ -398,9 +636,9 @@ class Package extends Build {
   deleteZip() {
     try {
       fs.rmSync(this._zipFile, { force: true });
-    } catch (e) { 
+    } catch (e) {
     }
-    
+
     try {
       fs.rmSync(this._zipTmpFile, { force: true });
     } catch (e) {
