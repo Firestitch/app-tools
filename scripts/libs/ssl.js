@@ -185,21 +185,11 @@ function info() {
   return 0;
 }
 
-/** Reissues the root CA and the leaf. Rare: the CA lasts 20 years, the leaf 10. */
-function generate() {
+function openssl(steps) {
   if (run('openssl', ['version']).status !== 0) {
     console.error('openssl is required to generate certificates but was not found on PATH.');
     return 1;
   }
-
-  const steps = [
-    ['genrsa', '-out', files.caKey, '4096'],
-    ['req', '-x509', '-new', '-nodes', '-key', files.caKey, '-sha256', '-days', '7300', '-out', files.caCrt, '-config', files.caCnf],
-    ['genrsa', '-out', files.leafKey, '2048'],
-    ['req', '-new', '-key', files.leafKey, '-out', path.join(SSL_DIR, 'localhost.csr'), '-config', files.leafCnf],
-    ['x509', '-req', '-in', path.join(SSL_DIR, 'localhost.csr'), '-CA', files.caCrt, '-CAkey', files.caKey,
-      '-CAcreateserial', '-out', files.leafCrt, '-days', '3650', '-sha256', '-extfile', files.leafCnf, '-extensions', 'leaf_ext'],
-  ];
 
   for (const args of steps) {
     const result = run('openssl', args, { stdio: 'inherit' });
@@ -214,10 +204,47 @@ function generate() {
     fs.rmSync(path.join(SSL_DIR, scratch), { force: true });
   }
 
-  console.success('Regenerated ssl/ca.crt and ssl/localhost.crt.');
-  console.log('The CA changed, so every machine must rerun: ssl trust');
-
   return 0;
+}
+
+const leafSteps = [
+  ['genrsa', '-out', files.leafKey, '2048'],
+  ['req', '-new', '-key', files.leafKey, '-out', path.join(SSL_DIR, 'localhost.csr'), '-config', files.leafCnf],
+  ['x509', '-req', '-in', path.join(SSL_DIR, 'localhost.csr'), '-CA', files.caCrt, '-CAkey', files.caKey,
+    '-CAcreateserial', '-out', files.leafCrt, '-days', '3650', '-sha256', '-extfile', files.leafCnf, '-extensions', 'leaf_ext'],
+];
+
+/** Reissues only the leaf, keeping the CA. Changing hostnames does not need a re-trust. */
+function reissue() {
+  if (!fs.existsSync(files.caKey)) {
+    console.error(`Missing ${files.caKey}, so the leaf cannot be signed. Run: ssl generate`);
+    return 1;
+  }
+
+  const status = openssl(leafSteps);
+
+  if (status === 0) {
+    console.success('Reissued ssl/localhost.crt. The CA is unchanged, so no machine needs to re-trust anything.');
+    console.log('Restart the dev server to pick it up.');
+  }
+
+  return status;
+}
+
+/** Reissues the root CA and the leaf. Rare: the CA lasts 20 years, the leaf 10. */
+function generate() {
+  const status = openssl([
+    ['genrsa', '-out', files.caKey, '4096'],
+    ['req', '-x509', '-new', '-nodes', '-key', files.caKey, '-sha256', '-days', '7300', '-out', files.caCrt, '-config', files.caCnf],
+    ...leafSteps,
+  ]);
+
+  if (status === 0) {
+    console.success('Regenerated ssl/ca.crt and ssl/localhost.crt.');
+    console.log('The CA changed, so every machine must rerun: ssl trust');
+  }
+
+  return status;
 }
 
 module.exports = {
@@ -227,5 +254,6 @@ module.exports = {
   trust: trust,
   untrust: untrust,
   info: info,
+  reissue: reissue,
   generate: generate,
 };

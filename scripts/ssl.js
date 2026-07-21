@@ -8,6 +8,7 @@ const commands = {
   trust: ssl.trust,
   untrust: ssl.untrust,
   info: ssl.info,
+  reissue: ssl.reissue,
   generate: ssl.generate,
 };
 

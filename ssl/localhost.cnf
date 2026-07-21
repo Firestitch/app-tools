@@ -27,10 +27,13 @@ extendedKeyUsage       = serverAuth
 subjectKeyIdentifier   = hash
 subjectAltName         = @alt_names
 
+# Do not add *.localhost here. Firefox refuses a wildcard on a two-label name, and
+# because this certificate is name constrained it parses every entry rather than just
+# the one being matched -- a single unparseable entry fails the whole certificate with
+# SEC_ERROR_BAD_DER, even when connecting to an unrelated host in this list.
 [alt_names]
 DNS.1 = localhost
-DNS.2 = *.localhost
-DNS.3 = local.firestitch.com
-DNS.4 = *.local.firestitch.com
+DNS.2 = local.firestitch.com
+DNS.3 = *.local.firestitch.com
 IP.1  = 127.0.0.1
 IP.2  = ::1
