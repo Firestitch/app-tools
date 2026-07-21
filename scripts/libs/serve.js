@@ -1,8 +1,10 @@
 const { Builder } = require('./builder');
 var cmd = require('./cmd');
+var console = require('./console');
 var env = require('./env');
 var fs = require('fs');
 var path = require('path');
+var ssl = require('./ssl');
 
 
 class Serve extends Builder {
@@ -42,6 +44,10 @@ class Serve extends Builder {
     }
 
     if (env.secure()) {
+      if (ssl.trusted() === false) {
+        console.error(`${ssl.CA_NAME} is not trusted on this machine, so the browser will warn about the certificate. Run "npx ssl trust" once to fix it.`);
+      }
+
       args = [
         ...args,
         '--ssl',

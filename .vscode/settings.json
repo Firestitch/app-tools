@@ -1,0 +1,7 @@
+{
+  "workbench.editorAssociations": {
+    "**/.specify/*.md": "vscode.markdown.preview.editor",
+    "**/.specify/**/*.md": "vscode.markdown.preview.editor"
+  },
+  "markdown.mermaid.enabled": true
+}

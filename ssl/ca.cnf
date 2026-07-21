@@ -1,0 +1,33 @@
+# Firestitch Development Root CA
+#
+# Regenerate with: node scripts/ssl.js generate
+#
+# The name constraints below are the reason it is safe to ship this CA (and its
+# private key) publicly: a machine that trusts this root will ONLY accept certs
+# it issued for localhost / *.local.firestitch.com / loopback IPs. It cannot be
+# used to forge a certificate for any real site.
+
+[req]
+distinguished_name = dn
+x509_extensions    = ca_ext
+prompt             = no
+default_md         = sha256
+
+[dn]
+C  = CA
+ST = Ontario
+L  = Toronto
+O  = Firestitch
+CN = Firestitch Development Root CA
+
+[ca_ext]
+basicConstraints       = critical, CA:TRUE, pathlen:0
+keyUsage               = critical, keyCertSign, cRLSign
+subjectKeyIdentifier   = hash
+nameConstraints        = critical, @name_constraints
+
+[name_constraints]
+permitted;DNS.0 = localhost
+permitted;DNS.1 = local.firestitch.com
+permitted;IP.0  = 127.0.0.0/255.0.0.0
+permitted;IP.1  = ::1/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff

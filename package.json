@@ -1,15 +1,17 @@
 {
   "name": "@firestitch/app-tools",
-  "version": "18.0.37",
+  "version": "18.0.38",
   "bin": {
     "serve": "./scripts/serve.js",
     "build": "./scripts/build.js",
-    "package": "./scripts/package.js"
+    "package": "./scripts/package.js",
+    "ssl": "./scripts/ssl.js"
   },
   "scripts": {
     "serve": "node scripts/serve.js",
     "build": "node scripts/build.js",
     "package": "node scripts/package.js",
+    "ssl": "node scripts/ssl.js",
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
