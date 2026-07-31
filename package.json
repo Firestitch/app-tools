@@ -15,7 +15,7 @@
     "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "prompts": "^2.4.2",
     "yazl": "^3.3.1"
   }
