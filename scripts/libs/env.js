@@ -54,6 +54,20 @@ module.exports = {
 		var packageJson = this.packageJson();
 		return this.arg('port') || packageJson.config.port || default_;
 	},
+	// The dev-server host. Explicit --host wins; otherwise the project's own
+	// serve options in angular.json, so a multi-project workspace can give each
+	// app its own hostname. Null means "no opinion" — the caller falls back to
+	// the package-name-derived host.
+	host: function() {
+		return this.arg('host') || this.projectServeOption('host') || null;
+	},
+	// One project's serve.options.<name> from angular.json, or null.
+	projectServeOption: function(name) {
+		const architect = this.angularJson().projects[this.project()].architect || {};
+		const options = (architect.serve && architect.serve.options) || {};
+
+		return options[name] !== undefined ? options[name] : null;
+	},
 	project: function() {
 		if(this.arg('project')) {
 			this._project = this.arg('project');

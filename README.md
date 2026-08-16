@@ -4,7 +4,9 @@
 |  Arg | Value  |  Default |
 | ------------ | ------------ | ------------ |
 |  --env |  string  | local |
+|  --project |  string  | first project in angular.json |
 |  --port |  number | package.json ￫ config ￫ port |
+|  --host |  string | the project's angular.json ￫ serve ￫ options ￫ host, else `<package name>.local.firestitch.com` |
 |  --secure |  boolean | false |
 |  --live-reload |  boolean |  false |
 

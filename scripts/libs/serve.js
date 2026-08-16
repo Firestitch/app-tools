@@ -27,7 +27,7 @@ class Serve extends Builder {
       }
     }
 
-    const host = this.extractHostFromProxy() || '::1';
+    const host = env.host() || this.extractHostFromProxy() || '::1';
 
     this.generateEnv();
     var args = [
