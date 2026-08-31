@@ -75,6 +75,11 @@ function trustPhp() {
   }
 
   const ca = fs.readFileSync(files.caCrt, 'utf8');
+  // Check-then-append is racy on paper (the bundle could change between the read and the
+  // write), and harmless in fact: the only consequence of losing the race is a duplicated
+  // PEM block, which OpenSSL bundle parsing tolerates -- the certificate is simply found
+  // twice. Atomicity is deliberately not bought here; a lock file on a system CA bundle
+  // would be a worse intrusion than the duplicate it prevents.
   if (fs.readFileSync(cafile, 'utf8').includes(ca.trim())) {
     console.log(`PHP CA bundle already carries ${CA_NAME} (${cafile}).`);
     return;
