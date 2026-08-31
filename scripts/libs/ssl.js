@@ -56,6 +56,38 @@ function trusted() {
   return null; // Linux: too many stores to probe reliably
 }
 
+/**
+ * PHP does not read the OS trust store: its openssl extension verifies against the
+ * bundle named by openssl.cafile (on Homebrew macOS, /opt/homebrew/etc/openssl@3/cert.pem),
+ * so a keychain-trusted CA is still invisible to file_get_contents/curl in PHP and a
+ * TLS-verifying test fails against a browser-green host. Appending the CA there closes
+ * it. The bundle is rewritten when the openssl formula upgrades, so trust() re-appends
+ * whenever the CA is absent -- rerunning after an upgrade is the documented remedy.
+ */
+function trustPhp() {
+  const php = run('php', ['-r', 'echo openssl_get_cert_locations()["default_cert_file"];']);
+  if (php.status !== 0) return; // no PHP on this machine -- nothing to do, say nothing
+
+  const cafile = String(php.stdout || '').trim();
+  if (!cafile || !fs.existsSync(cafile)) {
+    console.log(`PHP names a CA bundle that does not exist (${cafile || 'empty'}) -- skipped; append ssl/ca.crt to it manually if PHP TLS fetches fail.`);
+    return;
+  }
+
+  const ca = fs.readFileSync(files.caCrt, 'utf8');
+  if (fs.readFileSync(cafile, 'utf8').includes(ca.trim())) {
+    console.log(`PHP CA bundle already carries ${CA_NAME} (${cafile}).`);
+    return;
+  }
+
+  try {
+    fs.appendFileSync(cafile, `\n# ${CA_NAME} -- appended by ssl trust; re-run after an openssl upgrade rewrites this bundle\n${ca}`);
+    console.success(`Appended ${CA_NAME} to PHP's CA bundle (${cafile}) -- TLS-verifying PHP fetches now accept dev hosts.`);
+  } catch (e) {
+    console.log(`Could not write ${cafile} (${e.code || e.message}) -- append ssl/ca.crt to it manually (may need sudo).`);
+  }
+}
+
 function trust() {
   if (!fs.existsSync(files.caCrt)) {
     console.error(`Missing ${files.caCrt}. Run: ssl generate`);
@@ -63,7 +95,8 @@ function trust() {
   }
 
   if (trusted()) {
-    console.success(`${CA_NAME} is already trusted. Nothing to do.`);
+    trustPhp(); // an openssl upgrade rewrites PHP's bundle while the keychain stays trusted
+    console.success(`${CA_NAME} is already trusted in the OS store.`);
     return 0;
   }
 
@@ -90,6 +123,8 @@ function trust() {
   } else {
     return trustLinux();
   }
+
+  trustPhp();
 
   console.success(`${CA_NAME} installed. Restart your browser, then serve --secure shows a padlock with no warning.`);
   console.log('Firefox keeps its own trust store: set security.enterprise_roots.enabled = true in about:config, or import ssl/ca.crt under Settings > Certificates.');
