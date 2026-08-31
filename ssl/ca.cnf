@@ -5,7 +5,10 @@
 # The name constraints below are the reason it is safe to ship this CA (and its
 # private key) publicly: a machine that trusts this root will ONLY accept certs
 # it issued for localhost / *.local.firestitch.com / loopback IPs. It cannot be
-# used to forge a certificate for any real site.
+# used to forge a certificate for any real site. localhost.com is included because the
+# .local label in local.firestitch.com routes macOS name resolution through the mDNS
+# resolver, whose ~5s timeout stalls every cold lookup from curl/Node; hostnames under
+# localhost.com resolve instantly and are the preferred dev domain going forward.
 
 [req]
 distinguished_name = dn
@@ -29,5 +32,6 @@ nameConstraints        = critical, @name_constraints
 [name_constraints]
 permitted;DNS.0 = localhost
 permitted;DNS.1 = local.firestitch.com
+permitted;DNS.2 = localhost.com
 permitted;IP.0  = 127.0.0.0/255.0.0.0
 permitted;IP.1  = ::1/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff

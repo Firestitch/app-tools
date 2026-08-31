@@ -2,10 +2,11 @@
 #
 # Regenerate with: node scripts/ssl.js generate
 #
-# Add hostnames to [alt_names] as needed -- anything under local.firestitch.com or
-# localhost is already inside the CA's name constraints. A NEW top-level domain also
-# needs a matching entry in ca.cnf, which means reissuing the CA and re-trusting it
-# on every machine, so prefer *.local.firestitch.com.
+# Add hostnames to [alt_names] as needed -- anything under local.firestitch.com,
+# localhost.com or localhost is already inside the CA's name constraints. A NEW
+# top-level domain also needs a matching entry in ca.cnf, which means reissuing the
+# CA and re-trusting it on every machine, so prefer *.localhost.com (instant
+# resolution) or *.local.firestitch.com (legacy; ~5s mDNS stall on macOS).
 
 [req]
 distinguished_name = dn
@@ -35,5 +36,7 @@ subjectAltName         = @alt_names
 DNS.1 = localhost
 DNS.2 = local.firestitch.com
 DNS.3 = *.local.firestitch.com
+DNS.4 = localhost.com
+DNS.5 = *.localhost.com
 IP.1  = 127.0.0.1
 IP.2  = ::1
