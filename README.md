@@ -25,6 +25,49 @@
 |  Arg | Value  | Default |
 | ------------ | ------------ | ------------ |
 |  --env |  string  | production |
+|  --includes |  comma-separated paths | extra directories to add to the zip |
+|  --afterBuild |  shell command | run after the build, before the zip |
+
+The version is chosen first and nothing is written until the build succeeds, so a
+failed build leaves the working tree untouched:
+
+```
+select version → ng build → write package.json → --afterBuild → zip → commit, push, tag
+```
+
+## Hooks
+
+`--preBuild`, `--postBuild` and `--afterBuild` each take **either** a path to a
+JS file, which is `require()`d, **or** a shell command:
+
+```
+npx package --afterBuild="npm --prefix mcp run sync-version && npm --prefix mcp publish"
+npx build --preBuild=./scripts/generate-icons.js
+```
+
+A bare path with no spaces is treated as a file; anything else is run as a
+command (`node build.js` is a command, not a file). A shell hook that exits
+non-zero aborts the run; a JS hook cannot fail the run, because `require()`
+returns nothing to check.
+
+|  Hook | When |
+| ------------ | ------------ |
+|  --preBuild |  before `ng build` |
+|  --postBuild |  after `ng build` |
+|  --afterBuild |  package only: after the version is written, before the zip and before the commit |
+
+`--afterBuild` runs from the instance directory (the parent of `frontend`) with
+the chosen version in `$VERSION`. It is the point at which a sidecar package can
+take the app's version and publish itself — early enough that its version bump is
+swept into the same commit and tag as the app it ships with, and early enough
+that a failure stops the release before anything is committed or tagged.
+
+
+# Internals
+
+[ARCHITECTURE.md](ARCHITECTURE.md) — what each file does, the package ordering
+constraints, and the traps (cached `package.json`, `process.exit` on failure,
+observables that never run unless subscribed).
 
 
 # SSL

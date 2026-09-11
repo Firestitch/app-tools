@@ -29,6 +29,8 @@ class BuildJsonGenerator {
       });
   }
 
+  // Ask which version to release, and remember it on this.version — saveBuildJson()
+  // reads that field, so this must run before either save.
   promptVersion() {
     const nextPatchVersion = this.version.replace(/(\d+)$/, (value, part) => { 
       return Number(part) + 1 
@@ -48,11 +50,15 @@ class BuildJsonGenerator {
           type: 'select',
           name: 'version',
           message: 'Select a version',
+          // Patch first: it is what almost every release is, and it is the one the
+          // highlighted default should land on. Current version sits near the
+          // bottom — re-packaging the same version skips the commit and tag
+          // entirely, so it is a deliberate choice rather than a likely one.
           choices: [
-            { title: `Current version ${this.version}`, value: this.version },
             { title: `Next patch version ${nextPatchVersion}`, value: nextPatchVersion },
             { title: `Next minor version ${nextMinorVersion}`, value: nextMinorVersion },
             { title: `Next major version ${nextMajorVersion}`, value: nextMajorVersion },
+            { title: `Current version ${this.version}`, value: this.version },
             { title: 'Custom version', value: 'custom' },
           ],
           initial: 0
@@ -74,11 +80,15 @@ class BuildJsonGenerator {
     );
   };
 
+  // The repo's own version. In a package run this is the first write of the flow,
+  // and it is what the release is committed and tagged as.
   savePackageJson(version) {
     this.packageJson.version = version;
     fs.writeFileSync(env.packageJsonFile(), JSON.stringify(this.packageJson, null, 2).trim());
   }
 
+  // What the running app reports about itself. Takes no argument — the version
+  // comes from this.version, set by promptVersion().
   saveBuildJson() {
     var data = JSON.stringify({
       name: this.name,

@@ -36,18 +36,24 @@ class Package extends Build {
 
     this._nativeZipTool = this._detectNativeZip();
 
+    // Version is chosen up front but nothing is written until the build succeeds:
+    // a failed build then leaves the working tree exactly as it was, with no
+    // version bump to unwind. --afterBuild lands between the version write and the
+    // zip, so a sidecar package can sync its own version and publish itself while
+    // it is still early enough to be swept into the same commit and tag.
     return of(null)
       .pipe(
         tap(() => this.deleteZip()),
-        switchMap(() => super.build(false)),
-        switchMap(() => this.createZip()),
         switchMap(() => this.promptVersion()),
-        switchMap(({ version }) => {
-          return this.saveVersion(version)
-            .pipe(
-              mapTo(version),
-            );
+        switchMap(({ version }) => super.build(false).pipe(mapTo(version))),
+        switchMap((version) => {
+          this._buildJsonGenerator.saveBuildJson(version);
+          this._buildJsonGenerator.savePackageJson(version);
+
+          return this.runAfterBuild(version).pipe(mapTo(version));
         }),
+        switchMap((version) => this.createZip().pipe(mapTo(version))),
+        switchMap((version) => this.saveVersion(version).pipe(mapTo(version))),
         switchMap((version) => {
           if (this._nativeZipTool) {
             // Native zip already wrote the file — just rename
@@ -393,15 +399,17 @@ class Package extends Build {
   }
 
   promptVersion() {
-    console.log(`\n`);
+    // One blank line between the build output and the prompt. console.log('\n')
+    // would print two — the argument plus the newline log adds itself.
+    process.stdout.write('\n');
 
     return this._buildJsonGenerator.promptVersion();
   }
 
+  // build.json is written before the zip is created, but the zip is built from
+  // frontend/dist as it stood at that moment — appending it here guarantees the
+  // archive carries the chosen version rather than the previous build's.
   saveVersion(version) {
-    this._buildJsonGenerator.saveBuildJson(version);
-    this._buildJsonGenerator.savePackageJson(version);
-
     const items = [
       'frontend/dist/assets/build.json'
     ];
@@ -409,6 +417,27 @@ class Package extends Build {
     return this.appendZip(items);
   }
 
+  // Run --afterBuild, with the chosen version in the environment as $VERSION.
+  // A shell hook that exits non-zero aborts the package run: nothing is
+  // committed, pushed or tagged, so a failed command never leaves a tag pointing
+  // at a release that was never published.
+  runAfterBuild(version) {
+    if (!env.afterBuild()) {
+      return of(null);
+    }
+
+    console.log(`\nRunning --afterBuild:`);
+
+    return cmd.hook(env.afterBuild(), {
+      cwd: env.instanceDir(),
+      env: { ...process.env, VERSION: version },
+    });
+  }
+
+  // Named for git, not npm: commits the release, pushes it and tags it. Called
+  // only when the version actually changed, so re-packaging the same version
+  // touches no history. Anything that must be in the release commit has to have
+  // been written before this runs — which is why --afterBuild sits ahead of it.
   publish() {
     const unstaged = cmd.exec(`cd ${env.instanceDir()} && git diff --name-only`, [], { capture: true });
     const staged = cmd.exec(`cd ${env.instanceDir()} && git diff --name-only --staged`, [], { capture: true });

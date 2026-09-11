@@ -3,6 +3,8 @@
 var path = require('path');
 
 
+// Every input the tools take — CLI flags, package.json, angular.json — is read
+// through here. See ARCHITECTURE.md for how the three layers combine.
 module.exports = {
 
 	_src: null,
@@ -11,9 +13,11 @@ module.exports = {
 	process: function() {
 		return process;
 	},
+  // Where npm runs the script: the `frontend` directory.
   frontendDir: function() {
     return process.cwd();
   },
+  // Its parent — the repo root, where git and sibling packages (mcp, backend) live.
   instanceDir: function() {
     return path.join(this.frontendDir(), '..');
   },
@@ -37,6 +41,8 @@ module.exports = {
 	buildJsonFile: function() {
     return path.join(this.srcDir(), 'assets/build.json');
   },
+  // require() caches, so this object is shared and does NOT refresh after the file
+  // is written. Capture values before a write rather than re-reading afterwards.
   packageJson: function() {
     return require(this.packageJsonFile());
   },
@@ -109,6 +115,16 @@ module.exports = {
 	preBuild: function() {
 		return this.arg('preBuild');
 	},
+	// Shell command run once the build has succeeded and package.json carries the
+	// new version, before the zip is built and before anything is committed.
+	// Unlike preBuild/postBuild — which take a path to a JS file that is require()d
+	// synchronously during the build — this is a shell command, so it can publish a
+	// sidecar package and fail the run if that publish fails.
+	afterBuild: function() {
+		return this.arg('afterBuild');
+	},
+	// An option in three forms: --name=value, npm_config_name (npm --name=value),
+	// then the caller's own default — which is where package.json ￫ config is read.
 	arg(name, default_ = null) {
 		const arg = (process.argv || [])
 			.map((arg) => {

@@ -5,6 +5,8 @@ const env = require('./env');
 var { EnvGenerator } = require('./env-generator');
 
 
+// Base of Build (and so Package) and Serve: holds the configuration and the two
+// generators every command needs. See ARCHITECTURE.md.
 class Builder {
   configuration = null;
   envGenerator = null;

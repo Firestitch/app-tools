@@ -1,9 +1,8 @@
 const fs = require('fs');
 const env = require('./env');
 const cmd = require('./cmd');
-const path = require('path');
 const { Builder } = require('./builder');
-const { tap } = require('rxjs/operators');
+const { switchMap, tap } = require('rxjs/operators');
 
 
 class Build extends Builder {
@@ -15,11 +14,6 @@ class Build extends Builder {
     try {
       fs.rmSync(dist, { recursive: true, force: true });
     } catch (e) { }
-
-    if (env.preBuild()) {
-      const file = path.join(env.process().cwd(), env.preBuild());
-      require(file);
-    }
 
     var isWin = env.process().platform === 'win32';
     var cmd_ = `${isWin ? 'set ' : ''}NG_PERSISTENT_BUILD_CACHE=1 && node --max_old_space_size=8000 node_modules/@angular/cli/bin/ng`;
@@ -46,18 +40,17 @@ class Build extends Builder {
       ];
     }
 
-  return cmd.exec(cmd_, args)
+    // preBuild runs through the same pipeline as the build itself so a shell hook
+    // is awaited — and can abort the run — rather than being fired and forgotten.
+    return cmd.hook(env.preBuild())
       .pipe(
+        switchMap(() => cmd.exec(cmd_, args)),
         tap(() => {
           if(generateBuildJson) {
             this.generateBuildJson();
           }
-          
-          if (env.postBuild()) {
-            const file = path.join(env.process().cwd(), env.postBuild());
-            require(file);
-          }
         }),
+        switchMap(() => cmd.hook(env.postBuild())),
       );
   }
 }
