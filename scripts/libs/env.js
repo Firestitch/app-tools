@@ -115,14 +115,6 @@ module.exports = {
 	preBuild: function() {
 		return this.arg('preBuild');
 	},
-	// Shell command run once the build has succeeded and package.json carries the
-	// new version, before the zip is built and before anything is committed.
-	// Unlike preBuild/postBuild — which take a path to a JS file that is require()d
-	// synchronously during the build — this is a shell command, so it can publish a
-	// sidecar package and fail the run if that publish fails.
-	afterBuild: function() {
-		return this.arg('afterBuild');
-	},
 	// An option in three forms: --name=value, npm_config_name (npm --name=value),
 	// then the caller's own default — which is where package.json ￫ config is read.
 	arg(name, default_ = null) {

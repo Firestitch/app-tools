@@ -82,11 +82,11 @@ not the hook point.
 `package()` in `libs/package.js` is the only ordering-sensitive code in the repo:
 
 ```
-deleteZip
+deleteZip              ← throws if a stale .tmp is locked
 promptVersion          ← asks, writes nothing
-build                  ← ng build
+build(false, false)    ← ng build; postBuild deferred to below
 savePackageJson        ← FIRST write; a failed build never reaches here
---afterBuild           ← sidecar packages sync + publish here
+--postBuild            ← sidecar packages sync + publish here
 createZip
 saveVersion            ← appends build.json to the zip
 finalize zip
@@ -99,11 +99,13 @@ Two constraints hold this order in place, and both are easy to break:
 ergonomics — answer the prompt, walk away — but `savePackageJson` sits after the
 build so a failure leaves the working tree untouched, with no bump to unwind.
 
-**`--afterBuild` runs before `createZip` and before `publish()`.** Before the zip
+**`--postBuild` runs before `createZip` and before `publish()`.** Before the zip
 so anything it changes is in the archive; before the commit so its changes are
 swept into the same commit and the same tag. A sidecar package that versions
-itself with the app (see Specify's `mcp/`) depends on both. Moving the hook later
-silently reintroduces the drift it exists to prevent.
+itself with the app (see Specify's `mcp/`) depends on both. This is why `package`
+passes `runPostBuild = false` to `build()` and fires the hook itself: left in
+`build()`, it would run before the version was written. Moving it later silently
+reintroduces the drift it exists to prevent.
 
 `publish()` is named for git, not npm: it commits, pushes and tags. It runs only
 when the version actually changed, so re-packaging at the same version is a
@@ -130,5 +132,5 @@ throughout; using the wrong one means the prompt's answer is missing.
    which fires it and forgets it.
 3. A row in the README's table.
 
-Pass anything the hook needs through `options.env`; `--afterBuild` supplies
+Pass anything the hook needs through `options.env`; `--postBuild` supplies
 `$VERSION` this way so hooks do not have to re-read `package.json`.

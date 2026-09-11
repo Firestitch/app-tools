@@ -38,19 +38,22 @@ class Package extends Build {
 
     // Version is chosen up front but nothing is written until the build succeeds:
     // a failed build then leaves the working tree exactly as it was, with no
-    // version bump to unwind. --afterBuild lands between the version write and the
-    // zip, so a sidecar package can sync its own version and publish itself while
-    // it is still early enough to be swept into the same commit and tag.
+    // version bump to unwind.
+    //
+    // postBuild is deferred out of build() to here — after the version is written,
+    // before the zip and before the commit — so a sidecar package can sync its own
+    // version and publish itself while it is still early enough to be zipped into
+    // this build and swept into the same commit and tag.
     return of(null)
       .pipe(
         tap(() => this.deleteZip()),
         switchMap(() => this.promptVersion()),
-        switchMap(({ version }) => super.build(false).pipe(mapTo(version))),
+        switchMap(({ version }) => super.build(false, false).pipe(mapTo(version))),
         switchMap((version) => {
           this._buildJsonGenerator.saveBuildJson(version);
           this._buildJsonGenerator.savePackageJson(version);
 
-          return this.runAfterBuild(version).pipe(mapTo(version));
+          return this.runPostBuild(version).pipe(mapTo(version));
         }),
         switchMap((version) => this.createZip().pipe(mapTo(version))),
         switchMap((version) => this.saveVersion(version).pipe(mapTo(version))),
@@ -417,18 +420,18 @@ class Package extends Build {
     return this.appendZip(items);
   }
 
-  // Run --afterBuild, with the chosen version in the environment as $VERSION.
+  // Run --postBuild, with the chosen version in the environment as $VERSION.
   // A shell hook that exits non-zero aborts the package run: nothing is
   // committed, pushed or tagged, so a failed command never leaves a tag pointing
   // at a release that was never published.
-  runAfterBuild(version) {
-    if (!env.afterBuild()) {
+  runPostBuild(version) {
+    if (!env.postBuild()) {
       return of(null);
     }
 
-    console.log(`\nRunning --afterBuild:`);
+    console.log(`\nRunning --postBuild:`);
 
-    return cmd.hook(env.afterBuild(), {
+    return cmd.hook(env.postBuild(), {
       cwd: env.instanceDir(),
       env: { ...process.env, VERSION: version },
     });
@@ -437,7 +440,7 @@ class Package extends Build {
   // Named for git, not npm: commits the release, pushes it and tags it. Called
   // only when the version actually changed, so re-packaging the same version
   // touches no history. Anything that must be in the release commit has to have
-  // been written before this runs — which is why --afterBuild sits ahead of it.
+  // been written before this runs — which is why --postBuild sits ahead of it.
   publish() {
     const unstaged = cmd.exec(`cd ${env.instanceDir()} && git diff --name-only`, [], { capture: true });
     const staged = cmd.exec(`cd ${env.instanceDir()} && git diff --name-only --staged`, [], { capture: true });
@@ -662,16 +665,24 @@ class Package extends Build {
     return cmd.exec(`cd ${env.instanceDir()} && git push`);
   }
 
+  // Both files must be gone before the run starts. A leftover .tmp that cannot be
+  // deleted — a 7z.exe from a crashed run still holding it, or a virus scanner
+  // mid-scan — used to be swallowed here, and the run then appended to the
+  // previous build's archive: a stale, wrong-sized zip that only failed later,
+  // confusingly, inside 7-Zip. Fail here instead, where the cause is obvious.
   deleteZip() {
-    try {
-      fs.rmSync(this._zipFile, { force: true });
-    } catch (e) {
-    }
-
-    try {
-      fs.rmSync(this._zipTmpFile, { force: true });
-    } catch (e) {
-    }
+    [this._zipFile, this._zipTmpFile].forEach((file) => {
+      try {
+        fs.rmSync(file, { force: true });
+      } catch (e) {
+        throw new Error(
+          `Could not delete ${file}: ${e.message}\n\n` +
+          `Another process is holding it — most often a 7z.exe left over from a\n` +
+          `failed run, or a virus scanner. Close it (or delete the file by hand)\n` +
+          `and package again.`
+        );
+      }
+    });
   }
 }
 

@@ -2,12 +2,15 @@ const fs = require('fs');
 const env = require('./env');
 const cmd = require('./cmd');
 const { Builder } = require('./builder');
+const { of } = require('rxjs');
 const { switchMap, tap } = require('rxjs/operators');
 
 
 class Build extends Builder {
 
-  build(generateBuildJson = true) {
+  // runPostBuild = false lets `package` own when postBuild fires: it runs the hook
+  // itself, after the version is written, so a hook can act on the new version.
+  build(generateBuildJson = true, runPostBuild = true) {
     this.generateEnv();
     var dist = env.distDir();
 
@@ -50,7 +53,7 @@ class Build extends Builder {
             this.generateBuildJson();
           }
         }),
-        switchMap(() => cmd.hook(env.postBuild())),
+        switchMap(() => runPostBuild ? cmd.hook(env.postBuild()) : of(null)),
       );
   }
 }
