@@ -87,8 +87,7 @@ promptVersion          ← asks, writes nothing
 build(false, false)    ← ng build; postBuild deferred to below
 savePackageJson        ← FIRST write; a failed build never reaches here
 --postBuild            ← sidecar packages sync + publish here
-createZip
-saveVersion            ← appends build.json to the zip
+createZip              ← build.json is already inside frontend/dist by now
 finalize zip
 publish()              ← git add / commit / push / tag, only if version changed
 ```
@@ -107,7 +106,9 @@ passes `runPostBuild = false` to `build()` and fires the hook itself: left in
 `build()`, it would run before the version was written. Moving it later silently
 reintroduces the drift it exists to prevent.
 
-`publish()` is named for git, not npm: it commits, pushes and tags. It runs only
+`publish()` is named for git, not npm: it commits, pushes and tags. The commit
+message is the version, with no prompt — the release is unattended once the
+version is chosen. It runs only
 when the version actually changed, so re-packaging at the same version is a
 no-op. `build(false)` is passed `generateBuildJson = false` because `package()`
 writes `build.json` itself, with the newly chosen version.

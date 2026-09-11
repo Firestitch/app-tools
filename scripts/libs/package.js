@@ -1,5 +1,5 @@
 const path = require('path');
-const { from, forkJoin, of, Observable } = require('rxjs');
+const { forkJoin, of, Observable } = require('rxjs');
 const { switchMap, tap, map, mapTo } = require('rxjs/operators');
 const fs = require('fs');
 const { execSync, spawn } = require('child_process');
@@ -7,7 +7,6 @@ const env = require('./env');
 const cmd = require('./cmd');
 const { Build } = require('./build');
 const { BuildJsonGenerator } = require('./build-json-generator');
-const prompts = require('prompts');
 const yazl = require('yazl');
 
 
@@ -56,7 +55,6 @@ class Package extends Build {
           return this.runPostBuild(version).pipe(mapTo(version));
         }),
         switchMap((version) => this.createZip().pipe(mapTo(version))),
-        switchMap((version) => this.saveVersion(version).pipe(mapTo(version))),
         switchMap((version) => {
           if (this._nativeZipTool) {
             // Native zip already wrote the file — just rename
@@ -259,86 +257,6 @@ class Package extends Build {
     });
   }
 
-  _nativeAppendZip(items) {
-    const instanceDir = env.instanceDir();
-    const zipFile = fs.existsSync(this._zipTmpFile) ? this._zipTmpFile : this._zipFile;
-
-    const existingItems = items.filter((item) => {
-      const fullPath = path.join(instanceDir, item);
-      return fs.existsSync(fullPath);
-    });
-
-    if (existingItems.length === 0) {
-      return of(null);
-    }
-
-    if (this._nativeZipTool.type === '7z') {
-      return new Observable((observer) => {
-        const args = [
-          'a',
-          '-tzip',
-          '-mx=1',
-          zipFile,
-          ...existingItems,
-        ];
-
-        const proc = spawn(this._nativeZipTool.path, args, {
-          cwd: instanceDir,
-          stdio: 'inherit',
-          shell: false,
-        });
-
-        proc.on('close', (code) => {
-          if (code !== 0) {
-            observer.error(new Error(`7-Zip append failed with exit code ${code}`));
-            return;
-          }
-          console.log(`✓ Appended ${existingItems.join(', ')} to zip`);
-          observer.next(null);
-          observer.complete();
-        });
-
-        proc.on('error', (err) => {
-          observer.error(err);
-        });
-      });
-    }
-
-    // zip (Linux) — zip appends/updates by default when the archive exists
-    if (this._nativeZipTool.type === 'zip') {
-      return new Observable((observer) => {
-        const args = [
-          '-r',
-          '-1',
-          zipFile,
-          ...existingItems,
-        ];
-
-        const proc = spawn(this._nativeZipTool.path, args, {
-          cwd: instanceDir,
-          stdio: 'inherit',
-          shell: false,
-        });
-
-        proc.on('close', (code) => {
-          if (code !== 0) {
-            observer.error(new Error(`zip append failed with exit code ${code}`));
-            return;
-          }
-          console.log(`✓ Appended ${existingItems.join(', ')} to zip`);
-          observer.next(null);
-          observer.complete();
-        });
-
-        proc.on('error', (err) => {
-          observer.error(err);
-        });
-      });
-    }
-
-    return of(null);
-  }
-
   _finalizeYazlArchive(version) {
     const finalizeStartTime = Date.now();
     let lastSize = 0;
@@ -409,17 +327,6 @@ class Package extends Build {
     return this._buildJsonGenerator.promptVersion();
   }
 
-  // build.json is written before the zip is created, but the zip is built from
-  // frontend/dist as it stood at that moment — appending it here guarantees the
-  // archive carries the chosen version rather than the previous build's.
-  saveVersion(version) {
-    const items = [
-      'frontend/dist/assets/build.json'
-    ];
-
-    return this.appendZip(items);
-  }
-
   // Run --postBuild, with the chosen version in the environment as $VERSION.
   // A shell hook that exits non-zero aborts the package run: nothing is
   // committed, pushed or tagged, so a failed command never leaves a tag pointing
@@ -460,27 +367,20 @@ class Package extends Build {
         }),
         switchMap(({ unstaged, staged, untracked }) => {
           if (unstaged || untracked) {
-            return from(
-              prompts([
-                {
-                  type: 'text',
-                  name: 'message',
-                  message: 'There are files that have not been committed.\n\nPlease provide a commit message.',
-                  initial: this._buildJsonGenerator.version,
-                }
-              ])
-            )
+            // The version is the commit message. It was already the prompt's
+            // default and the answer was always to accept it, so asking only
+            // added a keystroke to every release.
+            const message = this._buildJsonGenerator.version;
+
+            return cmd.exec(`cd ${env.instanceDir()} && git commit --message="${message}"`)
               .pipe(
-                switchMap((response) => {
-                  return cmd.exec(`cd ${env.instanceDir()} && git commit --message="${response.message.replace('"', '\\"')}"`);
-                }),
                 switchMap(() => this.push()),
                 switchMap(() => this.createTag()),
               );
           }
 
           if (staged) {
-            return push()
+            return this.push()
               .pipe(
                 switchMap(() => this.createTag())
               );
@@ -491,13 +391,9 @@ class Package extends Build {
       );
   }
 
+  // Adds items to the yazl archive. Only createZip's yazl fallback reaches this —
+  // the native tools build the archive in one pass and never append.
   appendZip(items) {
-    // Use native tool if available
-    if (this._nativeZipTool) {
-      return this._nativeAppendZip(items);
-    }
-
-    // yazl fallback
     console.log(`\nAppending zip package...\n`);
 
     this._processedFiles = 0;
@@ -666,10 +562,8 @@ class Package extends Build {
   }
 
   // Both files must be gone before the run starts. A leftover .tmp that cannot be
-  // deleted — a 7z.exe from a crashed run still holding it, or a virus scanner
-  // mid-scan — used to be swallowed here, and the run then appended to the
-  // previous build's archive: a stale, wrong-sized zip that only failed later,
-  // confusingly, inside 7-Zip. Fail here instead, where the cause is obvious.
+  // deleted used to be swallowed here, and the run then built on top of the
+  // previous build's archive. Fail here instead, where the cause is obvious.
   deleteZip() {
     [this._zipFile, this._zipTmpFile].forEach((file) => {
       try {
