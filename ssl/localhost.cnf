@@ -31,9 +31,12 @@ subjectAltName         = @alt_names
 # because this certificate is name constrained it parses every entry rather than just
 # the one being matched -- a single unparseable entry fails the whole certificate with
 # SEC_ERROR_BAD_DER, even when connecting to an unrelated host in this list.
+#
+# Do not add IP entries (127.0.0.1, ::1) either. BoringSSL -- the TLS stack in Bun, and
+# so in Claude Code -- cannot check an IP address against a name constraint, so one IP
+# entry fails the whole certificate with "unsupported name constraint type" on every
+# host. Browse to https://localhost instead of https://127.0.0.1.
 [alt_names]
 DNS.1 = localhost
 DNS.2 = local.firestitch.com
 DNS.3 = *.local.firestitch.com
-IP.1  = 127.0.0.1
-IP.2  = ::1

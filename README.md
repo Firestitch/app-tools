@@ -84,8 +84,12 @@ observables that never run unless subscribed).
 |  generate |  Reissue the CA *and* the certificate. Forces every developer to rerun `trust` |
 
 `serve --secure` uses `ssl/localhost.crt`, issued by the **Firestitch Development Root CA**
-and valid for `localhost`, `local.firestitch.com`, `*.local.firestitch.com`, `127.0.0.1`
-and `::1`.
+and valid for `localhost`, `local.firestitch.com` and `*.local.firestitch.com`.
+
+It deliberately carries no IP addresses. BoringSSL (the TLS stack in Bun, and so in Claude
+Code) cannot check an IP entry against the CA's name constraints and rejects the whole
+certificate with `unsupported name constraint type`, even when connecting by hostname. Use
+`https://localhost`, not `https://127.0.0.1`.
 
 Browsers only trust a certificate whose issuer is in the machine's trust store, so each
 developer runs **`npx ssl trust` once per machine** to get a padlock instead of the
