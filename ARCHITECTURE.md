@@ -85,7 +85,7 @@ not the hook point.
 deleteZip              ← throws if a stale .tmp is locked
 promptVersion          ← asks (or takes --version), writes nothing
 build(false, false)    ← ng build; postBuild deferred to below
-savePackageJson        ← FIRST write; a failed build never reaches here
+savePackageJson        ← FIRST write (none at an unchanged version); a failed build never reaches here
 --postBuild            ← sidecar packages sync + publish here
 createZip              ← build.json is already inside frontend/dist by now
 finalize zip

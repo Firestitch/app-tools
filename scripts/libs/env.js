@@ -109,6 +109,14 @@ module.exports = {
 	platformWeb: function() {
 		return this.platform() === 'web';
 	},
+	// What the package zip holds, as comma-separated paths from the repo root. Left
+	// blank, the whole instance: the app build and the server side it deploys with.
+	// An app with no server side of its own (a mobile client) names frontend/dist.
+	include: function() {
+		const include = this.arg('include');
+
+		return include ? include.split(',') : ['frontend/dist', 'backend', 'framework', 'maintenance'];
+	},
 	postBuild: function() {
 		return this.arg('postBuild');
 	},

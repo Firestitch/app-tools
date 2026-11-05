@@ -527,10 +527,7 @@ class Package extends Build {
   createZip() {
     const includes = env.arg('includes') ? env.arg('includes').split(',') : [];
     const items = [
-      'frontend/dist',
-      'backend',
-      'framework',
-      'maintenance',
+      ...env.include(),
       ...includes,
     ];
 

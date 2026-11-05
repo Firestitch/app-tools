@@ -101,10 +101,16 @@ class BuildJsonGenerator {
   };
 
   // The repo's own version. In a package run this is the first write of the flow,
-  // and it is what the release is committed and tagged as.
+  // and it is what the release is committed and tagged as. An unchanged version
+  // (--version=current) leaves the file alone; otherwise it is written the way npm
+  // writes it, ending in one newline, so a release diff is the version line only.
   savePackageJson(version) {
+    if (this.packageJson.version === version) {
+      return;
+    }
+
     this.packageJson.version = version;
-    fs.writeFileSync(env.packageJsonFile(), JSON.stringify(this.packageJson, null, 2).trim());
+    fs.writeFileSync(env.packageJsonFile(), `${JSON.stringify(this.packageJson, null, 2)}\n`);
   }
 
   // What the running app reports about itself. Takes no argument — the version

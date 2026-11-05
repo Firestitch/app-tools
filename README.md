@@ -25,7 +25,8 @@
 |  Arg | Value  | Default |
 | ------------ | ------------ | ------------ |
 |  --env |  string  | production |
-|  --includes |  comma-separated paths | extra directories to add to the zip |
+|  --include |  comma-separated paths | replaces the base set `frontend/dist,backend,framework,maintenance` |
+|  --includes |  comma-separated paths | extras added on top of the base set |
 |  --preBuild |  JS file or shell command | run before the build |
 |  --postBuild |  JS file or shell command | run after the build, before the zip |
 |  --version |  current, patch, minor, major or x.y.z | the version, without the prompt |
@@ -35,7 +36,7 @@ app built from the same repo carries the same version as the first. Re-packaging
 the same version commits, pushes and tags nothing:
 
 ```
-"package:client": "npx package --project=client --version=current"
+"package:client": "npx package --project=client --version=current --include=frontend/dist"
 ```
 
 Put the flag in the script itself. `npm run package --version=…` hands it to npm,
