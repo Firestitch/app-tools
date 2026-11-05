@@ -115,6 +115,10 @@ module.exports = {
 	preBuild: function() {
 		return this.arg('preBuild');
 	},
+	// The package run's version, given in place of the prompt.
+	version: function() {
+		return this.arg('version');
+	},
 	// An option in three forms: --name=value, npm_config_name (npm --name=value),
 	// then the caller's own default — which is where package.json ￫ config is read.
 	arg(name, default_ = null) {

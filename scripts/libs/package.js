@@ -319,7 +319,13 @@ class Package extends Build {
     });
   }
 
+  // --version answers the prompt up front, so an app packaged alongside another
+  // (a second project at the same version: --version=current) never stops to ask.
   promptVersion() {
+    if (env.version()) {
+      return this._buildJsonGenerator.chooseVersion(env.version());
+    }
+
     // One blank line between the build output and the prompt. console.log('\n')
     // would print two — the argument plus the newline log adds itself.
     process.stdout.write('\n');

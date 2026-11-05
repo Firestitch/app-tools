@@ -4,7 +4,7 @@ const fs = require('fs');
 const prompts = require('prompts');
 const env = require('./env');
 const path = require('path');
-const { from } = require('rxjs');
+const { from, of } = require('rxjs');
 const { tap } = require('rxjs/operators');
 
 
@@ -12,7 +12,6 @@ class BuildJsonGenerator {
   version = null;
   name = null;
   packageJson = null;
-  nextVersion = null;
 
   constructor() {
     this.packageJson = env.packageJson();
@@ -22,27 +21,48 @@ class BuildJsonGenerator {
     if(!this.version) {
       throw Error('package.json version does not exist');
     }
+  }
 
-    this.nextVersion = this.version
-      .replace(/(\d+$)/, (value, part) => {
-        return Number(part) + 1
-      });
+  // The versions a release can take, by name. The prompt offers them and
+  // --version picks one by name, so both read the same arithmetic.
+  versions() {
+    return {
+      current: this.version,
+      patch: this.version.replace(/(\d+)$/, (value, part) => {
+        return Number(part) + 1;
+      }),
+      minor: this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major, minor) => {
+        return `${major}.${Number(minor) + 1}.0`;
+      }),
+      major: this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major) => {
+        return `${Number(major) + 1}.0.0`;
+      }),
+    };
+  }
+
+  // --version, in place of the prompt: current, patch, minor, major or an exact
+  // version (1.4.0). Remembered on this.version, as the prompt's answer is.
+  chooseVersion(value) {
+    const version = this.versions()[value] || value;
+
+    if(!/^\d+\.\d+\.\d+/.test(version)) {
+      throw Error(`--version=${value} is not current, patch, minor, major or a version such as 1.4.0`);
+    }
+
+    console.log(`Version ${version} (--version=${value})`);
+    this.version = version;
+
+    return of({ version });
   }
 
   // Ask which version to release, and remember it on this.version — saveBuildJson()
   // reads that field, so this must run before either save.
   promptVersion() {
-    const nextPatchVersion = this.version.replace(/(\d+)$/, (value, part) => { 
-      return Number(part) + 1 
-    });
-
-    const nextMinorVersion = this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major, minor) => { 
-      return `${major}.${Number(minor) + 1}.0`;
-    });
-
-    const nextMajorVersion = this.version.replace(/(\d+)\.(\d+)\.(\d+)$/, (value, major) => { 
-      return `${Number(major) + 1}.0.0`;
-    });
+    const {
+      patch: nextPatchVersion,
+      minor: nextMinorVersion,
+      major: nextMajorVersion,
+    } = this.versions();
 
     return from(
       prompts([

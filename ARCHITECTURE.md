@@ -83,7 +83,7 @@ not the hook point.
 
 ```
 deleteZip              ← throws if a stale .tmp is locked
-promptVersion          ← asks, writes nothing
+promptVersion          ← asks (or takes --version), writes nothing
 build(false, false)    ← ng build; postBuild deferred to below
 savePackageJson        ← FIRST write; a failed build never reaches here
 --postBuild            ← sidecar packages sync + publish here
@@ -116,7 +116,8 @@ writes `build.json` itself, with the newly chosen version.
 ## build-json-generator.js
 
 Owns the version. `promptVersion()` offers current / patch / minor / major /
-custom and stores the answer on `this.version`; `saveBuildJson()` ignores its
+custom and stores the answer on `this.version`; `chooseVersion()` does the same
+for `--version` without asking, from the same `versions()` arithmetic; `saveBuildJson()` ignores its
 argument and reads that field, so the prompt must have run first. Two artifacts
 come out of it: `package.json` (the repo's version) and `dist/assets/build.json`
 (what the running app reports about itself).

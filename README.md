@@ -28,6 +28,18 @@
 |  --includes |  comma-separated paths | extra directories to add to the zip |
 |  --preBuild |  JS file or shell command | run before the build |
 |  --postBuild |  JS file or shell command | run after the build, before the zip |
+|  --version |  current, patch, minor, major or x.y.z | the version, without the prompt |
+
+`--version=current` packages at the version already in package.json, so a second
+app built from the same repo carries the same version as the first. Re-packaging at
+the same version commits, pushes and tags nothing:
+
+```
+"package:client": "npx package --project=client --version=current"
+```
+
+Put the flag in the script itself. `npm run package --version=…` hands it to npm,
+which prints its own version instead.
 
 The version is chosen first and nothing is written until the build succeeds, so a
 failed build leaves the working tree untouched:
