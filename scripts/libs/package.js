@@ -556,8 +556,25 @@ class Package extends Build {
       );
   }
 
+  // Tags the release, REPLACING a tag of the same name locally and on origin.
+  // A tag left by an earlier run (a release re-packaged after a failed deploy, a
+  // tag pushed by hand on the wrong commit) used to stop the run here with "tag
+  // already exists", leaving the old tag on the old commit. Only this tag is
+  // pushed: `--tags` pushed every local tag, so one stale tag anywhere in the
+  // repo failed the release.
   createTag() {
-    return cmd.exec(`cd ${env.instanceDir()} && git tag v${this._buildJsonGenerator.version} && git push origin --tags`);
+    const tag = `v${this._buildJsonGenerator.version}`;
+
+    return cmd.exec(`cd ${env.instanceDir()} && git ls-remote --tags origin refs/tags/${tag}`, [], { capture: true })
+      .pipe(
+        tap((remote) => {
+          if (remote.trim()) {
+            console.log(`${tag} already exists on origin; replacing it with this release`);
+          }
+        }),
+        switchMap(() => cmd.exec(`cd ${env.instanceDir()} && git tag --force ${tag}`)),
+        switchMap(() => cmd.exec(`cd ${env.instanceDir()} && git push --force origin refs/tags/${tag}`)),
+      );
   }
 
   push() {

@@ -113,6 +113,10 @@ when the version actually changed, so re-packaging at the same version is a
 no-op. `build(false)` is passed `generateBuildJson = false` because `package()`
 writes `build.json` itself, with the newly chosen version.
 
+The tag `v<version>` always lands on the release commit: a tag of the same name,
+locally or on origin, is replaced (`git tag --force`, then a force push of that one
+tag) rather than failing the run. Only that tag is pushed, never `--tags`.
+
 ## build-json-generator.js
 
 Owns the version. `promptVersion()` offers current / patch / minor / major /
