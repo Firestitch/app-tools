@@ -12,6 +12,7 @@ runs, which is the most common way a change here silently does nothing.
 ```
 scripts/
   serve.js  build.js  package.js  ssl.js   entry points — parse env, subscribe
+  native-level.js                          entry point — raises native.json's level
   postinstall.js                           copies assets/ into the app on install
   libs/
     env.js                 every input: CLI args, package.json, angular.json
@@ -23,8 +24,14 @@ scripts/
     package.js             Package extends Build — the release flow
     env-generator.js       writes src/environments/env.ts
     build-json-generator.js  version prompt, package.json + build.json writes
+    native-level.js        native.json's level and plugin set: check + raise
     ssl.js                 dev certificate authority
 ```
+
+`build.js` and `package.js` run `NativeLevel.check()` before constructing their
+command, outside the observable chain: it is synchronous and exits the process
+itself, so a refused run never reaches the version prompt or `ng build`, and the
+exit code npm and CI see is its own.
 
 Inheritance is `Builder → Build → Package`, so `Package` gets `generateEnv()`,
 `generateBuildJson()` and `build()` for free. `Serve` extends `Builder` only.
@@ -82,6 +89,9 @@ not the hook point.
 `package()` in `libs/package.js` is the only ordering-sensitive code in the repo:
 
 ```
+NativeLevel.check()    ← in scripts/package.js; exits on changed native plugins. The
+                         one write ahead of the build: native.json's first record,
+                         which publish() then sweeps into the release commit
 deleteZip              ← throws if a stale .tmp is locked
 promptVersion          ← asks (or takes --version), writes nothing
 build(false, false)    ← ng build; postBuild deferred to below

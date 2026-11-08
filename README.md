@@ -46,7 +46,7 @@ The version is chosen first and nothing is written until the build succeeds, so 
 failed build leaves the working tree untouched:
 
 ```
-select version → ng build → write package.json → --postBuild → zip → commit, push, tag
+native level check → select version → ng build → write package.json → --postBuild → zip → commit, push, tag
 ```
 
 ## Hooks
@@ -76,6 +76,79 @@ take the app's version and publish itself — early enough that its version bump
 zipped into this build and swept into the same commit and tag as the app it ships
 with, and early enough that a failure stops the release before anything is
 committed or tagged.
+
+
+# Native level
+`npx native-level [args]`
+
+|  Arg | Value  | Default |
+| ------------ | ------------ | ------------ |
+|  --project |  string  | first project in angular.json |
+
+A Capacitor app's web build carries `src/assets/native.json`. A phone installs an
+over-the-air web bundle only when the bundle's `level` is no higher than the level
+its store build shipped with, so web code that needs a new native plugin never
+reaches a binary without it. That only works if the level goes up whenever the
+native plugins change, so `build` and `package` refuse to run until it has.
+
+native.json records the native plugins its level was raised for:
+
+```json
+{
+  "level": 2,
+  "plugins": {
+    "@capacitor/android": "6.0.0",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/ios": "6.0.0",
+    "capacitor-local-plugin": "1.0.0+3f9a0c27b1d4"
+  }
+}
+```
+
+- **The app root** is the nearest directory at or above the project's source that
+  holds `capacitor.config.ts`, `.js` or `.json` — where `npx cap sync` runs.
+- **A native plugin** is a dependency in the app root's `package.json` whose own
+  `package.json` — installed in the app root's `node_modules` or any parent's —
+  has a `capacitor` or `cordova` key, plus the runtimes `@capacitor/ios` and
+  `@capacitor/android`, which are native by name and need no installed copy.
+- **Its value** is the version the app root's `package-lock.json` pins: what
+  `npm ci` installs there before `npx cap sync` builds the store binary. It reads
+  the same on a developer's machine and on a CI agent that installs only the
+  workspace above the app root, whose copies can be other versions. With no
+  lockfile in the app root, the installed version is recorded instead.
+- **A `file:` plugin**'s native source changes without its version changing, so
+  it records its own `package.json` version plus the first 12 hex digits of a
+  SHA-256 over its `package.json`, root `*.podspec`, `ios/` and `android/` —
+  build output (`node_modules`, `build`, `.gradle`, `Pods`, `dist`) skipped and
+  line endings read as LF, so Windows and Linux agree.
+
+At the start of `npx build` and `npx package` for that project, before anything is
+built or the version is asked for:
+
+|  native.json | What happens |
+| ------------ | ------------ |
+|  no `plugins` yet |  the plugins are recorded at the current level; commit native.json |
+|  `plugins` match |  nothing |
+|  `plugins` differ |  the run exits non-zero, listing each plugin added, removed or changed |
+
+A refused run names the fix:
+
+```
+npx native-level --project=client
+```
+
+It raises the level by one, records the plugins, and prints the old and
+new level with the plugin changes. Commit native.json with the change that moved
+the plugins; phones take web code built from it only once they are on a store
+build of the new level.
+
+A native dependency missing from the app root's `package-lock.json` fails the run:
+run `npm install` in the app root to update it. So does a dependency whose name
+contains `capacitor` or `cordova` but is installed nowhere, since nothing says
+whether it is native: install the packages first.
+
+A project with no `src/assets/native.json`, or no Capacitor config above it, is
+not checked.
 
 
 # Internals
